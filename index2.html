@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معدات السعودية</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#f5f7f5;
+color:#17221d;
+}
+header{
+background:#087052;
+color:white;
+padding:35px 20px;
+text-align:center;
+}
+header h1{margin:0 0 10px;font-size:32px}
+header p{margin:0;font-size:18px}
+.hero{
+background:#087052;
+color:white;
+text-align:center;
+padding:35px 20px 45px;
+}
+.hero h2{font-size:32px;margin:0 0 15px}
+.warning{
+max-width:850px;
+margin:20px auto;
+background:#fff4dd;
+border:1px solid #e4c98d;
+border-radius:16px;
+padding:18px;
+line-height:1.8;
+}
+.box{
+max-width:850px;
+margin:20px auto;
+background:white;
+padding:25px;
+border-radius:18px;
+box-shadow:0 3px 12px #00000015;
+}
+.box h2{text-align:center;color:#087052}
+label{
+display:block;
+margin-top:15px;
+margin-bottom:6px;
+font-weight:bold;
+}
+input,select,textarea{
+width:100%;
+padding:13px;
+border:1px solid #ccc;
+border-radius:10px;
+font-size:16px;
+}
+textarea{min-height:110px}
+button{
+width:100%;
+margin-top:20px;
+padding:15px;
+border:0;
+border-radius:12px;
+background:#087052;
+color:white;
+font-size:19px;
+font-weight:bold;
+}
+footer{
+margin-top:40px;
+padding:35px 20px;
+background:#10271f;
+color:white;
+text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>معدات السعودية 🇸🇦</h1>
+<p>بيع • شراء • تأجير • طلب معدات داخل المملكة</p>
+</header>
+
+<section class="hero">
+<h2>كل المعدات في مكان واحد</h2>
+<p>منصة عربية لعرض المعدات الثقيلة والزراعية والشاحنات والرافعات ومعدات المشاريع.</p>
+</section>
+
+<div class="warning">
+<strong>⚠️ تنبيه مهم:</strong>
+لا تحول أي مبلغ قبل التأكد من هوية الطرف الآخر وصحة رقم الحساب واسم المستفيد ومعاينة المعدة أو التحقق منها قدر الإمكان.
+المنصة وسيط إعلاني فقط ولا تضمن عمليات البيع أو الشراء بين الأطراف.
+</div>
+
+<div class="box">
+<h2>➕ أضف إعلانك</h2>
+
+<form id="adForm">
+
+<label>عنوان الإعلان</label>
+<input id="title" required placeholder="مثال: حفار للبيع">
+
+<label>نوع المعدة</label>
+<select id="category" required>
+<option value="">اختر القسم</option>
+<option>جرارات زراعية</option>
+<option>حفارات</option>
+<option>شيولات</option>
+<option>بوبكات</option>
+<option>رافعات</option>
+<option>شاحنات</option>
+<option>معدات أخرى</option>
+</select>
+
+<label>السعر بالريال</label>
+<input id="price" type="number" placeholder="مثال: 50000">
+
+<label>المدينة</label>
+<input id="city" required placeholder="مثال: الدمام">
+
+<label>رقم الجوال</label>
+<input id="phone" type="tel" required placeholder="05xxxxxxxx">
+
+<label>رقم واتساب</label>
+<input id="whatsapp" type="tel" placeholder="05xxxxxxxx">
+
+<label>وصف المعدة</label>
+<textarea id="description" required placeholder="اكتب تفاصيل المعدة والحالة والموديل..."></textarea>
+
+<label>صور المعدة</label>
+<input id="images" type="file" accept="image/*" multiple>
+
+<button type="submit">نشر الإعلان</button>
+
+</form>
+
+<p id="message" style="text-align:center;font-weight:bold;"></p>
+</div>
+
+<footer>
+<h3>معدات السعودية</h3>
+<p>منصة إعلانات للمعدات داخل المملكة العربية السعودية</p>
+</footer>
+
+<script>
+document.getElementById("adForm").addEventListener("submit",function(e){
+e.preventDefault();
+document.getElementById("message").innerHTML=
+"✅ تم تجهيز الإعلان. سيتم ربط النشر بقاعدة بيانات الموقع.";
+});
+</script>
+
+</body>
+</html>
