@@ -1,163 +1,161 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>معدات السعودية</title>
-  <meta name="description" content="منصة معدات السعودية لعرض وطلب وبيع وتأجير المعدات الثقيلة والزراعية ومعدات المشاريع في المملكة العربية السعودية.">
-  <style>
-    :root{
-      --bg:#f5f7f4; --card:#ffffff; --ink:#17201c; --muted:#6f7b75;
-      --green:#0f6b4f; --green2:#0b4f3b; --sand:#e9dfc8; --line:#dfe6e1;
-      --warn:#fff5df; --warnb:#e6b44f;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.8}
-    header{
-      background:linear-gradient(135deg,var(--green2),var(--green));
-      color:#fff;padding:18px 16px 28px;position:sticky;top:0;z-index:5;
-      box-shadow:0 4px 18px rgba(0,0,0,.12)
-    }
-    .top{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .brand{font-size:26px;font-weight:700}
-    .tag{font-size:13px;opacity:.9}
-    .hero{max-width:1100px;margin:20px auto 0}
-    .hero h1{font-size:34px;margin:0 0 8px}
-    .hero p{margin:0;max-width:760px;opacity:.95}
-    main{max-width:1100px;margin:18px auto;padding:0 14px 40px}
-    .notice{background:var(--warn);border:1px solid var(--warnb);border-radius:16px;padding:14px 16px;margin-bottom:18px}
-    .notice b{color:#7a5200}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 18px rgba(0,0,0,.05)}
-    .card h3{margin:0 0 8px;font-size:21px}
-    .icon{font-size:38px;margin-bottom:6px}
-    .yellow{border-top:7px solid #f5c542}
-    .orange{border-top:7px solid #e57b25}
-    .red{border-top:7px solid #c8463b}
-    .blue{border-top:7px solid #3776b6}
-    .gray{border-top:7px solid #6f767d}
-    .green{border-top:7px solid #3e8b57}
-    .purple{border-top:7px solid #7453a6}
-    .brown{border-top:7px solid #8a6443}
-    .cta{margin-top:18px;background:var(--card);border-radius:18px;padding:20px;border:1px solid var(--line)}
-    .cta h2{margin-top:0}
-    .btns{display:flex;flex-wrap:wrap;gap:10px}
-    .btn{display:inline-block;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:700}
-    .primary{background:var(--green);color:white}
-    .secondary{background:#eef3f0;color:var(--green2);border:1px solid #cfdad4}
-    footer{background:#15231d;color:#dfe8e3;padding:24px 16px;text-align:center}
-    .small{font-size:13px;color:var(--muted)}
-    .search{margin:16px 0;display:flex;gap:8px}
-    input,select{width:100%;padding:13px 14px;border:1px solid #cfd8d3;border-radius:12px;font-size:16px;background:white}
-    @media(max-width:700px){
-      .grid{grid-template-columns:1fr}
-      .hero h1{font-size:28px}
-      .brand{font-size:22px}
-      .top{align-items:flex-start;flex-direction:column}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معدات السعودية</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#f5f7f5;
+color:#17221d;
+}
+header{
+background:#087052;
+color:white;
+padding:35px 20px;
+text-align:center;
+}
+header h1{margin:0 0 10px;font-size:32px}
+header p{margin:0;font-size:18px}
+.hero{
+background:#087052;
+color:white;
+text-align:center;
+padding:35px 20px 45px;
+}
+.hero h2{font-size:32px;margin:0 0 15px}
+.warning{
+max-width:850px;
+margin:20px auto;
+background:#fff4dd;
+border:1px solid #e4c98d;
+border-radius:16px;
+padding:18px;
+line-height:1.8;
+}
+.box{
+max-width:850px;
+margin:20px auto;
+background:white;
+padding:25px;
+border-radius:18px;
+box-shadow:0 3px 12px #00000015;
+}
+.box h2{text-align:center;color:#087052}
+label{
+display:block;
+margin-top:15px;
+margin-bottom:6px;
+font-weight:bold;
+}
+input,select,textarea{
+width:100%;
+padding:13px;
+border:1px solid #ccc;
+border-radius:10px;
+font-size:16px;
+}
+textarea{min-height:110px}
+button{
+width:100%;
+margin-top:20px;
+padding:15px;
+border:0;
+border-radius:12px;
+background:#087052;
+color:white;
+font-size:19px;
+font-weight:bold;
+}
+footer{
+margin-top:40px;
+padding:35px 20px;
+background:#10271f;
+color:white;
+text-align:center;
+}
+</style>
 </head>
+
 <body>
+
 <header>
-  <div class="top">
-    <div>
-      <div class="brand">معدات السعودية</div>
-      <div class="tag">بيع • شراء • تأجير • طلب معدات داخل المملكة</div>
-    </div>
-    <div>🇸🇦</div>
-  </div>
-  <div class="hero">
-    <h1>كل المعدات في مكان واحد</h1>
-    <p>منصة عربية بسيطة لعرض المعدات الثقيلة والزراعية ومعدات المشاريع والشاحنات والرافعات داخل السعودية.</p>
-  </div>
+<h1>معدات السعودية 🇸🇦</h1>
+<p>بيع • شراء • تأجير • طلب معدات داخل المملكة</p>
 </header>
 
-<main>
-  <div class="notice">
-    <b>تنبيه مهم:</b>
-    لا تحوّل أي مبلغ قبل التأكد من هوية الطرف الآخر، وصحة رقم الحساب واسم المستفيد، ومعاينة المعدة أو التحقق منها قدر الإمكان.
-    المنصة وسيط إعلاني فقط ولا تضمن عمليات البيع أو الشراء بين الأطراف.
-  </div>
+<section class="hero">
+<h2>كل المعدات في مكان واحد</h2>
+<p>منصة عربية لعرض المعدات الثقيلة والزراعية والشاحنات والرافعات ومعدات المشاريع.</p>
+</section>
 
-  <div class="search">
-    <input id="q" placeholder="ابحث عن معدة... مثال: بوكلين، شيول، رافعة، جرار">
-  </div>
+<div class="warning">
+<strong>⚠️ تنبيه مهم:</strong>
+لا تحول أي مبلغ قبل التأكد من هوية الطرف الآخر وصحة رقم الحساب واسم المستفيد ومعاينة المعدة أو التحقق منها قدر الإمكان.
+المنصة وسيط إعلاني فقط ولا تضمن عمليات البيع أو الشراء بين الأطراف.
+</div>
 
-  <section class="grid" id="cards">
-    <div class="card yellow" data-name="حفارات بوكلينات جي سي بي jcb">
-      <div class="icon">🚜</div>
-      <h3>حفارات وبوكلينات</h3>
-      <div class="small">JCB • كاتربلر • كوماتسو • هيونداي وغيرها</div>
-    </div>
+<div class="box">
+<h2>➕ أضف إعلانك</h2>
 
-    <div class="card orange" data-name="رافعات كرين ونش">
-      <div class="icon">🏗️</div>
-      <h3>رافعات وكرينات</h3>
-      <div class="small">رافعات متنقلة، أوناش ومعدات رفع</div>
-    </div>
+<form id="adForm">
 
-    <div class="card red" data-name="حراسات حواجز سلامة معدات امن">
-      <div class="icon">🦺</div>
-      <h3>معدات السلامة والحراسات</h3>
-      <div class="small">حواجز، سواتر، معدات سلامة وتجهيز مواقع</div>
-    </div>
+<label>عنوان الإعلان</label>
+<input id="title" required placeholder="مثال: حفار للبيع">
 
-    <div class="card blue" data-name="شاحنات توصيل قلاب تريلا نقل">
-      <div class="icon">🚚</div>
-      <h3>شاحنات ونقل</h3>
-      <div class="small">قلابات، تريلات، شاحنات توصيل ونقل معدات</div>
-    </div>
+<label>نوع المعدة</label>
+<select id="category" required>
+<option value="">اختر القسم</option>
+<option>جرارات زراعية</option>
+<option>حفارات</option>
+<option>شيولات</option>
+<option>بوبكات</option>
+<option>رافعات</option>
+<option>شاحنات</option>
+<option>معدات أخرى</option>
+</select>
 
-    <div class="card gray" data-name="شيول لودر انزلاقي بوبكات bobcat case">
-      <div class="icon">🚧</div>
-      <h3>شيولات ولودرات</h3>
-      <div class="small">بوبكات، CASE، لودرات ومعدات تحميل</div>
-    </div>
+<label>السعر بالريال</label>
+<input id="price" type="number" placeholder="مثال: 50000">
 
-    <div class="card green" data-name="جرارات زراعية كوبوتا يانمار ماسي">
-      <div class="icon">🚜</div>
-      <h3>جرارات ومعدات زراعية</h3>
-      <div class="small">كوبوتا، يانمار، ماسي فيرغسون وغيرها</div>
-    </div>
+<label>المدينة</label>
+<input id="city" required placeholder="مثال: الدمام">
 
-    <div class="card purple" data-name="مولدات كمبروسر كهرباء ديزل">
-      <div class="icon">⚙️</div>
-      <h3>مولدات وكمبروسرات</h3>
-      <div class="small">معدات طاقة وهواء للمشاريع والمواقع</div>
-    </div>
+<label>رقم الجوال</label>
+<input id="phone" type="tel" required placeholder="05xxxxxxxx">
 
-    <div class="card brown" data-name="قطع غيار معدات">
-      <div class="icon">🔩</div>
-      <h3>قطع غيار ومستلزمات</h3>
-      <div class="small">قطع غيار وإطارات وملحقات للمعدات</div>
-    </div>
-  </section>
+<label>رقم واتساب</label>
+<input id="whatsapp" type="tel" placeholder="05xxxxxxxx">
 
-  <section class="cta">
-    <h2>أضف إعلانك</h2>
-    <p>هذه النسخة الأولى من الموقع. يمكننا لاحقًا إضافة نموذج إعلان كامل، صور، رقم جوال، مدينة، سعر، واتساب، وحساب خاص للمعلنين.</p>
-    <div class="btns">
-      <a class="btn primary" href="mailto:ads@mo3dat-saudi.com?subject=إضافة إعلان في معدات السعودية">إضافة إعلان بالبريد</a>
-      <a class="btn secondary" href="#cards">تصفح الأقسام</a>
-    </div>
-  </section>
-</main>
+<label>وصف المعدة</label>
+<textarea id="description" required placeholder="اكتب تفاصيل المعدة والحالة والموديل..."></textarea>
+
+<label>صور المعدة</label>
+<input id="images" type="file" accept="image/*" multiple>
+
+<button type="submit">نشر الإعلان</button>
+
+</form>
+
+<p id="message" style="text-align:center;font-weight:bold;"></p>
+</div>
 
 <footer>
-  <div><b>معدات السعودية</b></div>
-  <div class="small" style="color:#b9c8c0">منصة إعلانات للمعدات داخل المملكة العربية السعودية</div>
+<h3>معدات السعودية</h3>
+<p>منصة إعلانات للمعدات داخل المملكة العربية السعودية</p>
 </footer>
 
 <script>
-  const q = document.getElementById('q');
-  const cards = [...document.querySelectorAll('.card')];
-  q.addEventListener('input', () => {
-    const v = q.value.trim().toLowerCase();
-    cards.forEach(c => {
-      const hay = (c.innerText + ' ' + c.dataset.name).toLowerCase();
-      c.style.display = hay.includes(v) ? '' : 'none';
-    });
-  });
+document.getElementById("adForm").addEventListener("submit",function(e){
+e.preventDefault();
+document.getElementById("message").innerHTML=
+"✅ تم تجهيز الإعلان. سيتم ربط النشر بقاعدة بيانات الموقع.";
+});
 </script>
+
 </body>
 </html>
