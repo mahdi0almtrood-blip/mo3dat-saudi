@@ -1,176 +1,163 @@
-
-<!DOCTYPE html>
-<html lang="ar">
+<!doctype html>
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>معداتك - متجر المعدات</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>معدات السعودية</title>
+  <meta name="description" content="منصة معدات السعودية لعرض وطلب وبيع وتأجير المعدات الثقيلة والزراعية ومعدات المشاريع في المملكة العربية السعودية.">
   <style>
-    body {
-      font-family: "Arial", sans-serif;
-      direction: rtl;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
+    :root{
+      --bg:#f5f7f4; --card:#ffffff; --ink:#17201c; --muted:#6f7b75;
+      --green:#0f6b4f; --green2:#0b4f3b; --sand:#e9dfc8; --line:#dfe6e1;
+      --warn:#fff5df; --warnb:#e6b44f;
     }
-    header {
-      background-color: #2c3e50;
-      color: white;
-      padding: 20px;
-      text-align: center;
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.8}
+    header{
+      background:linear-gradient(135deg,var(--green2),var(--green));
+      color:#fff;padding:18px 16px 28px;position:sticky;top:0;z-index:5;
+      box-shadow:0 4px 18px rgba(0,0,0,.12)
     }
-    nav {
-      background-color: #1abc9c;
-      padding: 10px;
-      text-align: center;
+    .top{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-size:26px;font-weight:700}
+    .tag{font-size:13px;opacity:.9}
+    .hero{max-width:1100px;margin:20px auto 0}
+    .hero h1{font-size:34px;margin:0 0 8px}
+    .hero p{margin:0;max-width:760px;opacity:.95}
+    main{max-width:1100px;margin:18px auto;padding:0 14px 40px}
+    .notice{background:var(--warn);border:1px solid var(--warnb);border-radius:16px;padding:14px 16px;margin-bottom:18px}
+    .notice b{color:#7a5200}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 18px rgba(0,0,0,.05)}
+    .card h3{margin:0 0 8px;font-size:21px}
+    .icon{font-size:38px;margin-bottom:6px}
+    .yellow{border-top:7px solid #f5c542}
+    .orange{border-top:7px solid #e57b25}
+    .red{border-top:7px solid #c8463b}
+    .blue{border-top:7px solid #3776b6}
+    .gray{border-top:7px solid #6f767d}
+    .green{border-top:7px solid #3e8b57}
+    .purple{border-top:7px solid #7453a6}
+    .brown{border-top:7px solid #8a6443}
+    .cta{margin-top:18px;background:var(--card);border-radius:18px;padding:20px;border:1px solid var(--line)}
+    .cta h2{margin-top:0}
+    .btns{display:flex;flex-wrap:wrap;gap:10px}
+    .btn{display:inline-block;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:700}
+    .primary{background:var(--green);color:white}
+    .secondary{background:#eef3f0;color:var(--green2);border:1px solid #cfdad4}
+    footer{background:#15231d;color:#dfe8e3;padding:24px 16px;text-align:center}
+    .small{font-size:13px;color:var(--muted)}
+    .search{margin:16px 0;display:flex;gap:8px}
+    input,select{width:100%;padding:13px 14px;border:1px solid #cfd8d3;border-radius:12px;font-size:16px;background:white}
+    @media(max-width:700px){
+      .grid{grid-template-columns:1fr}
+      .hero h1{font-size:28px}
+      .brand{font-size:22px}
+      .top{align-items:flex-start;flex-direction:column}
     }
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin: 0 15px;
-      font-weight: bold;
-    }
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 20px;
-    }
-    .product {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin: 10px;
-      width: 300px;
-      padding: 15px;
-      text-align: center;
-    }
-    .product img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
-    .product h2 {
-      font-size: 20px;
-      margin: 10px 0 5px;
-    }
-    .product p {
-      color: #555;
-    }
-    .price {
-      color: green;
-      font-weight: bold;
-      margin-top: 10px;
-      font-size: 18px;
-    }
-    .btn {
-      background-color: #3498db;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background-color: #2980b9;
-    }
-    .cart {
-      background-color: white;
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .actions {
-      text-align: center;
-      margin: 20px;
-    }
-    .actions a {
-      display: inline-block;
-      margin: 10px;
-      padding: 10px 15px;
-      background-color: #2ecc71;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-    .actions a.whatsapp { background-color: #25D366; }
-    .actions a.call { background-color: #e67e22; }
-    .actions a.tiktok { background-color: black; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🛠️ معداتك</h1>
-    <p>متجر لبيع المعدات والآليات</p>
-  </header>
-
-  <nav>
-    <a href="#">الصفحة الرئيسية</a>
-    <a href="#cart">سلة المشتريات</a>
-    <a href="https://www.tiktok.com/@yourstore" target="_blank">متجر تيك توك</a>
-  </nav>
-
-  <div class="container">
-    <div class="product">
-      <img src="https://via.placeholder.com/300x200?text=حفارة" alt="حفارة">
-      <h2>حفارة هيدروليكية</h2>
-      <p>حفارة قوية للحفر في المشاريع الكبيرة.</p>
-      <p class="price">150,000 ريال</p>
-      <button class="btn" onclick="addToCart('حفارة هيدروليكية', 150000)">أضف إلى السلة</button>
+<header>
+  <div class="top">
+    <div>
+      <div class="brand">معدات السعودية</div>
+      <div class="tag">بيع • شراء • تأجير • طلب معدات داخل المملكة</div>
     </div>
+    <div>🇸🇦</div>
+  </div>
+  <div class="hero">
+    <h1>كل المعدات في مكان واحد</h1>
+    <p>منصة عربية بسيطة لعرض المعدات الثقيلة والزراعية ومعدات المشاريع والشاحنات والرافعات داخل السعودية.</p>
+  </div>
+</header>
 
-    <div class="product">
-      <img src="https://via.placeholder.com/300x200?text=مولد" alt="مولد كهربائي">
-      <h2>مولد كهربائي 50KW</h2>
-      <p>مولد ممتاز للاستخدام في مواقع البناء والمصانع.</p>
-      <p class="price">35,000 ريال</p>
-      <button class="btn" onclick="addToCart('مولد كهربائي', 35000)">أضف إلى السلة</button>
-    </div>
-
-    <div class="product">
-      <img src="https://via.placeholder.com/300x200?text=رافعة" alt="رافعة">
-      <h2>رافعة شوكية ديزل</h2>
-      <p>رافعة مثالية لنقل الأحمال الثقيلة في المستودعات.</p>
-      <p class="price">65,000 ريال</p>
-      <button class="btn" onclick="addToCart('رافعة شوكية ديزل', 65000)">أضف إلى السلة</button>
-    </div>
+<main>
+  <div class="notice">
+    <b>تنبيه مهم:</b>
+    لا تحوّل أي مبلغ قبل التأكد من هوية الطرف الآخر، وصحة رقم الحساب واسم المستفيد، ومعاينة المعدة أو التحقق منها قدر الإمكان.
+    المنصة وسيط إعلاني فقط ولا تضمن عمليات البيع أو الشراء بين الأطراف.
   </div>
 
-  <div class="cart" id="cart">
-    <h2>🛒 سلة المشتريات</h2>
-    <ul id="cart-items"></ul>
-    <p><strong>الإجمالي:</strong> <span id="total">0</span> ريال</p>
+  <div class="search">
+    <input id="q" placeholder="ابحث عن معدة... مثال: بوكلين، شيول، رافعة، جرار">
   </div>
 
-  <div class="actions">
-    <a href="https://wa.me/966500000000?text=أرغب%20في%20شراء%20منتجات%20من%20المتجر" target="_blank" class="whatsapp">📱 إرسال الطلب عبر واتساب</a>
-    <a href="tel:966500000000" class="call">📞 اتصال مباشر</a>
-    <a href="https://www.tiktok.com/@yourstore" target="_blank" class="tiktok">🎵 متجر تيك توك</a>
-  </div>
+  <section class="grid" id="cards">
+    <div class="card yellow" data-name="حفارات بوكلينات جي سي بي jcb">
+      <div class="icon">🚜</div>
+      <h3>حفارات وبوكلينات</h3>
+      <div class="small">JCB • كاتربلر • كوماتسو • هيونداي وغيرها</div>
+    </div>
 
-  <script>
-    let cart = [];
-    function addToCart(name, price) {
-      cart.push({ name, price });
-      updateCart();
-    }
+    <div class="card orange" data-name="رافعات كرين ونش">
+      <div class="icon">🏗️</div>
+      <h3>رافعات وكرينات</h3>
+      <div class="small">رافعات متنقلة، أوناش ومعدات رفع</div>
+    </div>
 
-    function updateCart() {
-      const cartItems = document.getElementById("cart-items");
-      const total = document.getElementById("total");
-      cartItems.innerHTML = "";
-      let sum = 0;
-      cart.forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = `${item.name} - ${item.price} ريال`;
-        cartItems.appendChild(li);
-        sum += item.price;
-      });
-      total.textContent = sum;
-    }
-  </script>
+    <div class="card red" data-name="حراسات حواجز سلامة معدات امن">
+      <div class="icon">🦺</div>
+      <h3>معدات السلامة والحراسات</h3>
+      <div class="small">حواجز، سواتر، معدات سلامة وتجهيز مواقع</div>
+    </div>
+
+    <div class="card blue" data-name="شاحنات توصيل قلاب تريلا نقل">
+      <div class="icon">🚚</div>
+      <h3>شاحنات ونقل</h3>
+      <div class="small">قلابات، تريلات، شاحنات توصيل ونقل معدات</div>
+    </div>
+
+    <div class="card gray" data-name="شيول لودر انزلاقي بوبكات bobcat case">
+      <div class="icon">🚧</div>
+      <h3>شيولات ولودرات</h3>
+      <div class="small">بوبكات، CASE، لودرات ومعدات تحميل</div>
+    </div>
+
+    <div class="card green" data-name="جرارات زراعية كوبوتا يانمار ماسي">
+      <div class="icon">🚜</div>
+      <h3>جرارات ومعدات زراعية</h3>
+      <div class="small">كوبوتا، يانمار، ماسي فيرغسون وغيرها</div>
+    </div>
+
+    <div class="card purple" data-name="مولدات كمبروسر كهرباء ديزل">
+      <div class="icon">⚙️</div>
+      <h3>مولدات وكمبروسرات</h3>
+      <div class="small">معدات طاقة وهواء للمشاريع والمواقع</div>
+    </div>
+
+    <div class="card brown" data-name="قطع غيار معدات">
+      <div class="icon">🔩</div>
+      <h3>قطع غيار ومستلزمات</h3>
+      <div class="small">قطع غيار وإطارات وملحقات للمعدات</div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>أضف إعلانك</h2>
+    <p>هذه النسخة الأولى من الموقع. يمكننا لاحقًا إضافة نموذج إعلان كامل، صور، رقم جوال، مدينة، سعر، واتساب، وحساب خاص للمعلنين.</p>
+    <div class="btns">
+      <a class="btn primary" href="mailto:ads@mo3dat-saudi.com?subject=إضافة إعلان في معدات السعودية">إضافة إعلان بالبريد</a>
+      <a class="btn secondary" href="#cards">تصفح الأقسام</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div><b>معدات السعودية</b></div>
+  <div class="small" style="color:#b9c8c0">منصة إعلانات للمعدات داخل المملكة العربية السعودية</div>
+</footer>
+
+<script>
+  const q = document.getElementById('q');
+  const cards = [...document.querySelectorAll('.card')];
+  q.addEventListener('input', () => {
+    const v = q.value.trim().toLowerCase();
+    cards.forEach(c => {
+      const hay = (c.innerText + ' ' + c.dataset.name).toLowerCase();
+      c.style.display = hay.includes(v) ? '' : 'none';
+    });
+  });
+</script>
 </body>
 </html>
