@@ -149,6 +149,15 @@ text-align:center;
 <p>منصة إعلانات للمعدات داخل المملكة العربية السعودية</p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://anhnbngfhxbmrbvvcqah.supabase.co";
+const SUPABASE_KEY = "sb_publishable_KdNneYT0PkMo-0IrLGYOCA_e4-lrnyC";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
+  
 <script>
 document.getElementById("adForm").addEventListener("submit",function(e){
 e.preventDefault();
