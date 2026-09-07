@@ -159,10 +159,31 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 </script>
   
 <script>
-document.getElementById("adForm").addEventListener("submit",function(e){
-e.preventDefault();
-document.getElementById("message").innerHTML=
-"✅ تم تجهيز الإعلان. سيتم ربط النشر بقاعدة بيانات الموقع.";
+document.getElementById("adForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  const ad = {
+    title: document.getElementById("title").value,
+    category: document.getElementById("category").value,
+    price: document.getElementById("price").value || null,
+    city: document.getElementById("city").value,
+    phone: document.getElementById("phone").value,
+    whatsapp: document.getElementById("whatsapp").value || null,
+    description: document.getElementById("description").value
+  };
+
+  const { error } = await supabaseClient
+    .from("ads")
+    .insert([ad]);
+
+  if (error) {
+    document.getElementById("message").textContent =
+      "❌ لم يتم نشر الإعلان: " + error.message;
+  } else {
+    document.getElementById("message").textContent =
+      "✅ تم نشر الإعلان بنجاح";
+    this.reset();
+  }
 });
 </script>
 
