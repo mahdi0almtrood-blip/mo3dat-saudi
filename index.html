@@ -185,7 +185,45 @@ document.getElementById("adForm").addEventListener("submit", async function(e){
     this.reset();
   }
 });
-</script>
+<section style="max-width:900px;margin:30px auto;padding:20px;">
+  <h2 style="text-align:center;color:#087f5b;">أحدث الإعلانات</h2>
+  <div id="adsList"></div>
+</section>
+
+<script>
+async function loadAds() {
+  const adsList = document.getElementById("adsList");
+
+  const { data, error } = await supabaseClient
+    .from("ads")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    adsList.innerHTML = "<p>تعذر تحميل الإعلانات حالياً</p>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    adsList.innerHTML = "<p style='text-align:center;'>لا توجد إعلانات حالياً</p>";
+    return;
+  }
+
+  adsList.innerHTML = data.map(ad => `
+    <div style="background:white;border:1px solid #ddd;border-radius:16px;padding:18px;margin:15px 0;">
+      <h3>${ad.title || "إعلان معدات"}</h3>
+      <p><strong>القسم:</strong> ${ad.category || "-"}</p>
+      <p><strong>السعر:</strong> ${ad.price || "-"} ريال</p>
+      <p><strong>المدينة:</strong> ${ad.city || "-"}</p>
+      <p>${ad.description || ""}</p>
+      <p><strong>الجوال:</strong> ${ad.phone || "-"}</p>
+      <p><strong>واتساب:</strong> ${ad.whatsapp || "-"}</p>
+    </div>
+  `).join("");
+}
+
+loadAds();
+</script> 
 
 </body>
 </html>
