@@ -195,18 +195,18 @@ document.getElementById("adForm").addEventListener("submit", async function(e){
 async function loadAds() {
   const adsList = document.getElementById("adsList");
 
-  const { data, error } = await supabaseClient .from("ads")   .order("id", { ascending: false });
+  
 .from("ads")
 .select("*");
-  if (error) {
-    adsList.innerHTML = "<p>تعذر تحميل الإعلانات حالياً</p>";
-    return;
-  }
+if (error) {
+  adsList.innerHTML = "<p style='color:red;'>خطأ: " + error.message + "</p>";
+  return;
+}  
 
-  if (!data || data.length === 0) {
-    adsList.innerHTML = "<p style='text-align:center;'>لا توجد إعلانات حالياً</p>";
-    return;
-  }
+  
+
+
+  
 
   adsList.innerHTML = data.map(ad => `
     <div style="background:white;border:1px solid #ddd;border-radius:16px;padding:18px;margin:15px 0;">
