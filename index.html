@@ -260,7 +260,7 @@ if (error) {
 
  window.adsData = data;
   adsList.innerHTML = data.map(ad => `
-    <div style="background:white;border:1px solid #ddd;border-radius:16px;padding:18px;margin:15px 0;">
+    <div onclick="openAd(${ad.id})" style="background:white;border:1px solid #ddd;border-radius:16px;padding:18px;margin:15px 0;">
       <h3>${ad.title || "إعلان معدات"}</h3>
       <p><strong>القسم:</strong> ${ad.category || "-"}</p>
       <p><strong>السعر:</strong> ${ad.price || "-"} ريال</p>
@@ -272,8 +272,20 @@ if (error) {
   `).join("");
 }
 
-loadAds();
-</script> 
+loadAds(); </script> 
+<script>
+function openAd(id) {
+  const ad = window.adsData.find(item => item.id == id);
+  if (!ad) return;
 
+  alert(
+    (ad.title || "إعلان معدات") +
+    "\nالسعر: " + (ad.price || "-") + " ريال" +
+    "\nالمدينة: " + (ad.city || "-") +
+    "\nالجوال: " + (ad.phone || "-") +
+    "\nواتساب: " + (ad.whatsapp || "-")
+  );
+}
+</script>
 </body>
 </html>
