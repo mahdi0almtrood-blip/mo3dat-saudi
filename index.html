@@ -195,11 +195,9 @@ document.getElementById("adForm").addEventListener("submit", async function(e){
 async function loadAds() {
   const adsList = document.getElementById("adsList");
 
-  const { data, error } = await supabaseClient
-    .from("ads")
-    .select("*")
-    .order("id", { ascending: false });
-
+  const { data, error } = await supabaseClient .from("ads")   .order("id", { ascending: false });
+.from("ads")
+.select("*");
   if (error) {
     adsList.innerHTML = "<p>تعذر تحميل الإعلانات حالياً</p>";
     return;
