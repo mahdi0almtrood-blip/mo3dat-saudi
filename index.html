@@ -258,6 +258,7 @@ if (error) {
 
   
 
+ window.adsData = data;
   adsList.innerHTML = data.map(ad => `
     <div style="background:white;border:1px solid #ddd;border-radius:16px;padding:18px;margin:15px 0;">
       <h3>${ad.title || "إعلان معدات"}</h3>
