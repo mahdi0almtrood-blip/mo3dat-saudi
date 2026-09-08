@@ -195,7 +195,7 @@ document.getElementById("adForm").addEventListener("submit", async function(e){
 async function loadAds() {
   const adsList = document.getElementById("adsList");
 
-  
+  const { data, error } = await supabaseClient
 .from("ads")
 .select("*");
 if (error) {
