@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معدات السعودية</title>
+<meta name="description" content="منصة معدات السعودية لبيع وشراء وتأجير المعدات الثقيلة والزراعية داخل المملكة">
+<style>
+:root{
+  --green:#087052;
+  --green-dark:#065a42;
+  --bg:#f5f7f5;
+  --card:#fff;
+  --text:#17221d;
+  --muted:#66736d;
+  --line:#dfe6e2;
+  --warn:#fff4dd;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text)}
+a{text-decoration:none;color:inherit}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:var(--green);color:white;
+  box-shadow:0 2px 12px #0002;
+}
+.topbar-inner{
+  max-width:1180px;margin:auto;padding:14px 18px;
+  display:flex;align-items:center;gap:14px;justify-content:space-between
+}
+.brand{font-size:24px;font-weight:800;white-space:nowrap}
+.nav-actions{display:flex;gap:8px;align-items:center}
+.nav-btn{
+  border:1px solid #ffffff55;background:#ffffff15;color:white;
+  border-radius:10px;padding:9px 12px;font-weight:700
+}
+
+.hero{background:linear-gradient(180deg,var(--green),var(--green-dark));color:white;padding:34px 18px 42px}
+.hero-inner{max-width:1180px;margin:auto;text-align:center}
+.hero h1{margin:0 0 10px;font-size:34px}
+.hero p{margin:0;opacity:.95;font-size:18px}
+
+.warning{
+  max-width:1180px;margin:18px auto;background:var(--warn);
+  border:1px solid #e4c98d;border-radius:14px;padding:15px 18px;line-height:1.8
+}
+
+.container{max-width:1180px;margin:auto;padding:0 18px 35px}
+.toolbar{
+  background:white;border:1px solid var(--line);border-radius:16px;padding:14px;
+  display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin:18px 0
+}
+.toolbar input,.toolbar select,.form-grid input,.form-grid select,.form-grid textarea{
+  width:100%;padding:12px;border:1px solid #cfd8d3;border-radius:10px;background:white
+}
+.primary{
+  background:var(--green);color:white;border:0;border-radius:10px;padding:12px 16px;font-weight:800
+}
+.secondary{
+  background:white;color:var(--green);border:1px solid var(--green);border-radius:10px;padding:11px 14px;font-weight:800
+}
+
+.categories{
+  display:flex;gap:10px;overflow:auto;padding:4px 0 12px;scrollbar-width:none
+}
+.cat{
+  white-space:nowrap;background:white;border:1px solid var(--line);border-radius:999px;
+  padding:9px 14px;font-weight:700
+}
+.cat.active{background:var(--green);color:white;border-color:var(--green)}
+
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px}
+.section-title h2{margin:0;color:var(--green)}
+
+.ads-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ad-card{
+  background:white;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:0 2px 8px #0000000c;transition:.15s;cursor:pointer
+}
+.ad-card:hover{transform:translateY(-2px)}
+.ad-cover{aspect-ratio:16/10;background:#eef2ef;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ad-cover img{width:100%;height:100%;object-fit:cover}
+.placeholder{font-size:56px;opacity:.35}
+.ad-body{padding:14px}
+.ad-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.price{color:var(--green);font-size:19px;font-weight:800}
+.meta{color:var(--muted);font-size:14px;margin-top:7px}
+.empty,.error{background:white;border:1px solid var(--line);border-radius:14px;padding:24px;text-align:center}
+.error{color:#b42318;background:#fff1f0;border-color:#ffc9c5}
+
+.modal{
+  position:fixed;inset:0;background:#0008;display:none;align-items:flex-start;justify-content:center;
+  padding:24px 12px;z-index:100;overflow:auto
+}
+.modal.open{display:flex}
+.modal-box{
+  width:min(100%,980px);background:white;border-radius:18px;overflow:hidden;position:relative
+}
+.close{
+  position:absolute;left:12px;top:12px;width:40px;height:40px;border-radius:50%;
+  border:0;background:#0009;color:white;font-size:24px;z-index:2
+}
+.detail{display:grid;grid-template-columns:1.1fr .9fr}
+.gallery-main{background:#111;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+.gallery-main img{width:100%;height:100%;object-fit:contain}
+.thumbs{display:flex;gap:8px;padding:10px;background:#f4f5f4;overflow:auto}
+.thumb{width:80px;height:62px;flex:none;border:2px solid transparent;border-radius:8px;overflow:hidden}
+.thumb.active{border-color:var(--green)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.detail-info{padding:22px}
+.detail-info h2{margin:0 0 10px}
+.detail-price{font-size:25px;color:var(--green);font-weight:800}
+.detail-meta{color:var(--muted);margin:10px 0 18px}
+.desc{white-space:pre-wrap;line-height:1.9;border-top:1px solid var(--line);padding-top:16px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.action-link{
+  text-align:center;padding:12px;border-radius:10px;font-weight:800
+}
+.call{background:#edf7f3;color:var(--green);border:1px solid #b8ded0}
+.wa{background:#eaf8ee;color:#16823b;border:1px solid #bfe7cb}
+.share{background:#f7f7f7;border:1px solid #ddd}
+.fav{background:#fff5f5;color:#b42318;border:1px solid #f1c8c8}
+
+.message-box{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
+.message-box textarea{width:100%;min-height:90px;padding:12px;border:1px solid #cfd8d3;border-radius:10px}
+
+.panel{
+  background:white;border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:22px
+}
+.panel h2{color:var(--green);margin-top:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid .full{grid-column:1/-1}
+label{display:block;font-weight:700;margin-bottom:6px}
+.preview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.preview-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.help{font-size:13px;color:var(--muted);margin-top:6px}
+.status{text-align:center;font-weight:800;margin-top:12px;min-height:22px}
+
+footer{background:#10271f;color:white;text-align:center;padding:32px 18px;margin-top:30px}
+
+@media(max-width:900px){
+  .ads-grid{grid-template-columns:repeat(2,1fr)}
+  .detail{grid-template-columns:1fr}
+  .toolbar{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .brand{font-size:20px}
+  .hero h1{font-size:28px}
+  .ads-grid{grid-template-columns:1fr}
+  .toolbar{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .form-grid .full{grid-column:auto}
+  .preview-grid{grid-template-columns:repeat(3,1fr)}
+  .nav-actions .hide-mobile{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">معدات السعودية 🇸🇦</div>
+    <div class="nav-actions">
+      <button class="nav-btn hide-mobile" onclick="document.getElementById('postAd').scrollIntoView({behavior:'smooth'})">أضف إعلان</button>
+      <button class="nav-btn" onclick="showFavorites()">المفضلة</button>
+    </div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1>كل المعدات في مكان واحد</h1>
+    <p>بيع • شراء • تأجير • طلب معدات داخل المملكة العربية السعودية</p>
+  </div>
+</section>
+
+<div class="warning">
+  <strong>⚠️ تنبيه مهم:</strong>
+  لا تحول أي مبلغ قبل التأكد من هوية الطرف الآخر وصحة رقم الحساب واسم المستفيد ومعاينة المعدة أو التحقق منها قدر الإمكان.
+  المنصة وسيط إعلاني فقط ولا تضمن عمليات البيع أو الشراء بين الأطراف.
+</div>
+
+<main class="container">
+  <div class="toolbar">
+    <input id="searchInput" placeholder="ابحث عن حفار، جرار، بوبكات..." oninput="applyFilters()">
+    <select id="cityFilter" onchange="applyFilters()">
+      <option value="">كل المدن</option>
+    </select>
+    <select id="sortFilter" onchange="applyFilters()">
+      <option value="newest">الأحدث</option>
+      <option value="priceLow">السعر الأقل</option>
+      <option value="priceHigh">السعر الأعلى</option>
+    </select>
+    <button class="primary" onclick="document.getElementById('postAd').scrollIntoView({behavior:'smooth'})">+ أضف إعلان</button>
+  </div>
+
+  <div class="categories" id="categoryBar"></div>
+
+  <div class="section-title">
+    <h2>أحدث الإعلانات</h2>
+    <span id="adsCount"></span>
+  </div>
+  <div id="adsList" class="ads-grid"></div>
+
+  <section class="panel" id="postAd">
+    <h2>➕ أضف إعلانك</h2>
+    <form id="adForm">
+      <div class="form-grid">
+        <div class="full">
+          <label>عنوان الإعلان</label>
+          <input id="title" required maxlength="120" placeholder="مثال: حفار كوماتسو للبيع">
+        </div>
+        <div>
+          <label>القسم</label>
+          <select id="category" required></select>
+        </div>
+        <div>
+          <label>السعر بالريال</label>
+          <input id="price" type="number" min="0" placeholder="مثال: 85000">
+        </div>
+        <div>
+          <label>المدينة</label>
+          <input id="city" required maxlength="80" placeholder="مثال: الدمام">
+        </div>
+        <div>
+          <label>رقم الجوال</label>
+          <input id="phone" type="tel" required maxlength="20" placeholder="05xxxxxxxx">
+        </div>
+        <div>
+          <label>رقم واتساب</label>
+          <input id="whatsapp" type="tel" maxlength="20" placeholder="05xxxxxxxx">
+        </div>
+        <div class="full">
+          <label>وصف المعدة</label>
+          <textarea id="description" required maxlength="2500" placeholder="الموديل، سنة الصنع، الحالة، ساعات العمل، وأي تفاصيل مهمة..."></textarea>
+        </div>
+        <div class="full">
+          <label>صور المعدة</label>
+          <input id="images" type="file" accept="image/*" multiple>
+          <div class="help">يمكنك اختيار عدة صور. أول صورة ستكون الصورة الرئيسية.</div>
+          <div id="previewGrid" class="preview-grid"></div>
+        </div>
+      </div>
+      <button id="submitBtn" class="primary" type="submit" style="width:100%;margin-top:16px">نشر الإعلان</button>
+      <div id="formStatus" class="status"></div>
+    </form>
+  </section>
+</main>
+
+<div id="detailModal" class="modal" onclick="closeOnBackdrop(event)">
+  <div class="modal-box">
+    <button class="close" onclick="closeDetail()">×</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<footer>
+  <h3>معدات السعودية</h3>
+  <p>منصة إعلانات للمعدات داخل المملكة العربية السعودية</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://anhnbngfhxbmrbvvcqah.supabase.co";
+const SUPABASE_KEY = "sb_publishable_KdNneYT0PkMo-0IrLGYOCA_e4-lrnyC";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const CATEGORIES = ["الكل","جرارات زراعية","حفارات","شيولات","بوبكات","رافعات","شاحنات","معدات طرق","مولدات","كمبروسرات","معدات أخرى"];
+let allAds = [];
+let activeCategory = "الكل";
+let favorites = JSON.parse(localStorage.getItem("mo3dat_favorites") || "[]");
+
+function esc(v){
+  return String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function normalizePhone(v){
+  let d=String(v||"").replace(/\D/g,"");
+  if(d.startsWith("966")) return d;
+  if(d.startsWith("0")) return "966"+d.slice(1);
+  if(d.startsWith("5")) return "966"+d;
+  return d;
+}
+function parseMessage(ad){
+  const raw = ad.message || "";
+  const match = raw.match(/^القسم:\s*(.+?)\n\n([\s\S]*)$/);
+  return {
+    category: ad.category || (match ? match[1].trim() : "معدات أخرى"),
+    description: ad.description || (match ? match[2].trim() : raw)
+  };
+}
+function renderCategories(){
+  document.getElementById("categoryBar").innerHTML = CATEGORIES.map(c =>
+    `<button class="cat ${c===activeCategory?'active':''}" onclick="selectCategory('${c}')">${c}</button>`
+  ).join("");
+  document.getElementById("category").innerHTML =
+    '<option value="">اختر القسم</option>' + CATEGORIES.filter(x=>x!=="الكل").map(c=>`<option>${c}</option>`).join("");
+}
+function selectCategory(c){ activeCategory=c; renderCategories(); applyFilters(); }
+
+async function loadAds(){
+  const box=document.getElementById("adsList");
+  box.innerHTML='<div class="empty">جاري تحميل الإعلانات...</div>';
+  const {data,error}=await sb.from("ads").select("*").order("created_at",{ascending:false}).limit(200);
+  if(error){
+    box.innerHTML=`<div class="error">❌ تعذر تحميل الإعلانات.<br>${esc(error.message)}</div>`;
+    return;
+  }
+  allAds=(data||[]).map(ad=>{
+    const parsed=parseMessage(ad);
+    return {...ad,_category:parsed.category,_description:parsed.description};
+  });
+  fillCities();
+  applyFilters();
+}
+function fillCities(){
+  const select=document.getElementById("cityFilter");
+  const cities=[...new Set(allAds.map(a=>a.city).filter(Boolean))].sort();
+  select.innerHTML='<option value="">كل المدن</option>'+cities.map(c=>`<option>${esc(c)}</option>`).join("");
+}
+function applyFilters(){
+  const q=document.getElementById("searchInput").value.trim().toLowerCase();
+  const city=document.getElementById("cityFilter").value;
+  const sort=document.getElementById("sortFilter").value;
+  let list=allAds.filter(a=>{
+    const text=[a.title,a.city,a._category,a._description].join(" ").toLowerCase();
+    return (!q||text.includes(q)) && (!city||a.city===city) && (activeCategory==="الكل"||a._category===activeCategory);
+  });
+  if(sort==="priceLow") list.sort((a,b)=>(Number(a.price)||0)-(Number(b.price)||0));
+  if(sort==="priceHigh") list.sort((a,b)=>(Number(b.price)||0)-(Number(a.price)||0));
+  renderAds(list);
+}
+function getCover(ad){
+  if(Array.isArray(ad.images)&&ad.images.length) return ad.images[0];
+  if(ad.image_url) return ad.image_url;
+  return "";
+}
+function renderAds(list){
+  const box=document.getElementById("adsList");
+  document.getElementById("adsCount").textContent=`${list.length} إعلان`;
+  if(!list.length){box.innerHTML='<div class="empty">لا توجد إعلانات مطابقة.</div>';return;}
+  box.innerHTML=list.map(ad=>{
+    const cover=getCover(ad);
+    return `<article class="ad-card" onclick="openDetail(${Number(ad.id)})">
+      <div class="ad-cover">${cover?`<img src="${esc(cover)}" alt="">`:`<div class="placeholder">🚜</div>`}</div>
+      <div class="ad-body">
+        <div class="ad-title">${esc(ad.title||"إعلان معدات")}</div>
+        <div class="price">${ad.price?Number(ad.price).toLocaleString("ar-SA")+" ريال":"السعر عند التواصل"}</div>
+        <div class="meta">📍 ${esc(ad.city||"-")} • ${esc(ad._category||"معدات")}</div>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+async function getImages(ad){
+  if(Array.isArray(ad.images)&&ad.images.length) return ad.images;
+  const {data,error}=await sb.from("ad_images").select("image_url").eq("ad_id",ad.id).order("id");
+  if(!error && data?.length) return data.map(x=>x.image_url);
+  return ad.image_url?[ad.image_url]:[];
+}
+async function openDetail(id){
+  const ad=allAds.find(x=>Number(x.id)===Number(id));
+  if(!ad)return;
+  const modal=document.getElementById("detailModal");
+  const content=document.getElementById("detailContent");
+  modal.classList.add("open");
+  document.body.style.overflow="hidden";
+  content.innerHTML='<div class="empty" style="margin:20px">جاري فتح الإعلان...</div>';
+  const imgs=await getImages(ad);
+  const phone=String(ad.phone||"");
+  const wa=normalizePhone(ad.whatsapp||ad.phone||"");
+  const fav=favorites.includes(Number(ad.id));
+  const images=imgs.length?imgs:[""];
+  content.innerHTML=`
+    <div class="detail">
+      <div>
+        <div class="gallery-main" id="galleryMain">
+          ${imgs.length?`<img src="${esc(imgs[0])}" alt="">`:`<div class="placeholder">🚜</div>`}
+        </div>
+        ${imgs.length>1?`<div class="thumbs">${imgs.map((u,i)=>`<button class="thumb ${i===0?'active':''}" onclick="showImage('${esc(u)}',this)"><img src="${esc(u)}"></button>`).join("")}</div>`:""}
+      </div>
+      <div class="detail-info">
+        <h2>${esc(ad.title||"إعلان معدات")}</h2>
+        <div class="detail-price">${ad.price?Number(ad.price).toLocaleString("ar-SA")+" ريال":"السعر عند التواصل"}</div>
+        <div class="detail-meta">📍 ${esc(ad.city||"-")} • ${esc(ad._category||"معدات")}</div>
+        <div class="desc">${esc(ad._description||"")}</div>
+        <div class="actions">
+          ${phone?`<a class="action-link call" href="tel:${esc(phone)}">📞 اتصال</a>`:""}
+          ${wa?`<a class="action-link wa" href="https://wa.me/${wa}" target="_blank" rel="noopener">💬 واتساب</a>`:""}
+          <button class="action-link share" onclick="shareAd(${Number(ad.id)})">🔗 مشاركة</button>
+          <button class="action-link fav" onclick="toggleFavorite(${Number(ad.id)},this)">${fav?"❤️ محفوظ":"🤍 مفضلة"}</button>
+        </div>
+        <div class="message-box">
+          <h3>رسالة خاصة للمعلن</h3>
+          <textarea id="privateMessage" placeholder="اكتب رسالتك هنا..."></textarea>
+          <button class="primary" style="width:100%;margin-top:8px" onclick="sendPrivateMessage(${Number(ad.id)})">إرسال الرسالة</button>
+          <div id="messageStatus" class="status"></div>
+        </div>
+      </div>
+    </div>`;
+}
+function showImage(url,btn){
+  document.getElementById("galleryMain").innerHTML=`<img src="${url}" alt="">`;
+  document.querySelectorAll(".thumb").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+}
+function closeDetail(){document.getElementById("detailModal").classList.remove("open");document.body.style.overflow=""}
+function closeOnBackdrop(e){if(e.target.id==="detailModal")closeDetail()}
+function toggleFavorite(id,btn){
+  id=Number(id);
+  if(favorites.includes(id)) favorites=favorites.filter(x=>x!==id); else favorites.push(id);
+  localStorage.setItem("mo3dat_favorites",JSON.stringify(favorites));
+  btn.textContent=favorites.includes(id)?"❤️ محفوظ":"🤍 مفضلة";
+}
+function showFavorites(){
+  const list=allAds.filter(a=>favorites.includes(Number(a.id)));
+  activeCategory="الكل";renderCategories();renderAds(list);
+  window.scrollTo({top:300,behavior:"smooth"});
+}
+async function shareAd(id){
+  const ad=allAds.find(x=>Number(x.id)===Number(id));
+  const text=`${ad?.title||"إعلان معدات"} - معدات السعودية`;
+  const url=location.href.split("#")[0]+"#ad-"+id;
+  if(navigator.share){try{await navigator.share({title:text,text,url});return}catch(e){}}
+  await navigator.clipboard.writeText(url);
+  alert("تم نسخ رابط الإعلان");
+}
+
+async function sendPrivateMessage(adId){
+  const input=document.getElementById("privateMessage");
+  const status=document.getElementById("messageStatus");
+  const body=input.value.trim();
+  if(!body){status.style.color="#b42318";status.textContent="اكتب الرسالة أولاً";return;}
+  status.style.color="#17221d";status.textContent="جاري الإرسال...";
+  const {error}=await sb.from("messages").insert([{ad_id:adId,body}]);
+  if(error){
+    status.style.color="#b42318";
+    status.textContent="لم يتم إرسال الرسالة. يلزم تفعيل جدول الرسائل في Supabase.";
+    return;
+  }
+  input.value="";
+  status.style.color="#087052";status.textContent="✅ تم إرسال الرسالة بنجاح";
+}
+
+const imageInput=document.getElementById("images");
+imageInput.addEventListener("change",()=>{
+  const files=[...imageInput.files];
+  document.getElementById("previewGrid").innerHTML=files.map(f=>`<img src="${URL.createObjectURL(f)}">`).join("");
+});
+
+async function uploadAdImages(adId, files){
+  if(!files.length) return;
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    const ext=(f.name.split(".").pop()||"jpg").toLowerCase();
+    const path=`${adId}/${Date.now()}_${i}.${ext}`;
+    const up=await sb.storage.from("ad-images").upload(path,f,{upsert:false});
+    if(up.error) throw up.error;
+    const pub=sb.storage.from("ad-images").getPublicUrl(path);
+    const imageUrl=pub.data.publicUrl;
+    const ins=await sb.from("ad_images").insert([{ad_id:adId,image_url:imageUrl}]);
+    if(ins.error) throw ins.error;
+  }
+}
+
+document.getElementById("adForm").addEventListener("submit",async function(e){
+  e.preventDefault();
+  const btn=document.getElementById("submitBtn");
+  const status=document.getElementById("formStatus");
+  btn.disabled=true;btn.textContent="جاري النشر...";
+  status.style.color="#17221d";status.textContent="";
+  const category=document.getElementById("category").value;
+  const description=document.getElementById("description").value.trim();
+  const ad={
+    title:document.getElementById("title").value.trim(),
+    price:document.getElementById("price").value||null,
+    city:document.getElementById("city").value.trim(),
+    phone:document.getElementById("phone").value.trim(),
+    whatsapp:document.getElementById("whatsapp").value.trim()||null,
+    message:`القسم: ${category}\n\n${description}`
+  };
+  const {data,error}=await sb.from("ads").insert([ad]).select().single();
+  if(error){
+    status.style.color="#b42318";status.textContent="❌ لم يتم نشر الإعلان: "+error.message;
+    btn.disabled=false;btn.textContent="نشر الإعلان";return;
+  }
+  try{
+    await uploadAdImages(data.id,[...imageInput.files]);
+    status.style.color="#087052";status.textContent="✅ تم نشر الإعلان بنجاح";
+  }catch(err){
+    status.style.color="#b26a00";
+    status.textContent="✅ تم نشر الإعلان، لكن الصور تحتاج تفعيل إعداد الصور في Supabase.";
+  }
+  this.reset();
+  document.getElementById("previewGrid").innerHTML="";
+  btn.disabled=false;btn.textContent="نشر الإعلان";
+  await loadAds();
+});
+
+renderCategories();
+loadAds();
+
+window.addEventListener("load",()=>{
+  const m=location.hash.match(/^#ad-(\d+)$/);
+  if(m)setTimeout(()=>openDetail(Number(m[1])),700);
+});
+</script>
+</body>
+</html>
