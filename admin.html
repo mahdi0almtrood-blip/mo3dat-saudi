@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>إدارة إعلانات معدات السعودية</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f7f5;
+  color:#17221d;
+}
+
+header{
+  background:#087052;
+  color:white;
+  padding:22px;
+  text-align:center;
+}
+
+.container{
+  max-width:900px;
+  margin:25px auto;
+  padding:15px;
+}
+
+.box,.ad{
+  background:white;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:15px;
+  border:1px solid #dfe6e2;
+}
+
+.ad h3{
+  color:#087052;
+}
+
+button{
+  width:100%;
+  border:0;
+  border-radius:9px;
+  padding:13px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.refresh{
+  background:#087052;
+  color:white;
+}
+
+.delete{
+  background:#c62828;
+  color:white;
+  margin-top:10px;
+}
+
+.status{
+  text-align:center;
+  padding:15px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>لوحة إدارة معدات السعودية</h1>
+<p>إدارة الإعلانات</p>
+</header>
+
+<div class="container">
+
+<div class="box">
+<button class="refresh" onclick="loadAds()">
+تحديث الإعلانات
+</button>
+</div>
+
+<div id="ads">
+<div class="status">جاري تحميل الإعلانات...</div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL = "ضع_رابط_SUPABASE_هنا";
+const SUPABASE_KEY = "ضع_المفتاح_العام_هنا";
+
+const supabaseClient =
+supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+async function loadAds(){
+
+const adsBox=document.getElementById("ads");
+
+adsBox.innerHTML=
+'<div class="status">جاري تحميل الإعلانات...</div>';
+
+const {data,error}=await supabaseClient
+.from("ads")
+.select("*")
+.order("id",{ascending:false});
+
+if(error){
+adsBox.innerHTML=
+'<div class="status">تعذر تحميل الإعلانات</div>';
+console.error(error);
+return;
+}
+
+if(!data || data.length===0){
+adsBox.innerHTML=
+'<div class="status">لا توجد إعلانات حاليًا</div>';
+return;
+}
+
+adsBox.innerHTML="";
+
+data.forEach(ad=>{
+
+const div=document.createElement("div");
+div.className="ad";
+
+div.innerHTML=`
+<h3>${ad.title || "بدون عنوان"}</h3>
+
+<p><strong>رقم الإعلان:</strong> ${ad.id || ""}</p>
+
+<p><strong>السعر:</strong> ${ad.price || "غير محدد"}</p>
+
+<p><strong>المدينة:</strong> ${ad.city || "غير محددة"}</p>
+
+<p><strong>الهاتف:</strong> ${ad.phone || ""}</p>
+
+<p><strong>واتساب:</strong> ${ad.whatsapp || ""}</p>
+
+<p><strong>الوصف:</strong><br>${ad.message || ""}</p>
+
+<button class="delete"
+onclick="deleteAd(${ad.id})">
+حذف الإعلان
+</button>
+`;
+
+adsBox.appendChild(div);
+
+});
+
+}
+
+async function deleteAd(id){
+
+if(!confirm("هل أنت متأكد من حذف هذا الإعلان؟"))
+return;
+
+const {error}=await supabaseClient
+.from("ads")
+.delete()
+.eq("id",id);
+
+if(error){
+alert("تعذر حذف الإعلان");
+console.error(error);
+return;
+}
+
+alert("تم حذف الإعلان");
+loadAds();
+
+}
+
+loadAds();
+
+</script>
+
+</body>
+</html>
