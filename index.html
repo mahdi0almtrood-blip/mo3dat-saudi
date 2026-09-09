@@ -435,7 +435,7 @@ async function sendPrivateMessage(adId){
   const body=input.value.trim();
   if(!body){status.style.color="#b42318";status.textContent="اكتب الرسالة أولاً";return;}
   status.style.color="#17221d";status.textContent="جاري الإرسال...";
-  const {error}=await sb.from("messages").insert([{ad_id:adId,body}]);
+  const {error}=await sb.from("messages").insert([{ad_id:adId,message:body}]);
   if(error){
     status.style.color="#b42318";
     status.textContent="لم يتم إرسال الرسالة. يلزم تفعيل جدول الرسائل في Supabase.";
