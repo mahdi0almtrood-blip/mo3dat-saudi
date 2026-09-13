@@ -357,9 +357,19 @@ function renderAds(list){
 
 async function getImages(ad){
   if(Array.isArray(ad.images)&&ad.images.length) return ad.images;
-  const {data,error}=await sb.from("ad_images").select("image_url").eq("ad_id",ad.id).order("id");
-  if(!error && data?.length) return data.map(x=>x.image_url);
-  return ad.image_url?[ad.image_url]:[];
+  if(ad.image_url) return [ad.image_url];
+
+  // Read images directly from the public Storage folder for this ad.
+  // This avoids depending on a separate ad_images database table.
+  const folder=String(ad.id);
+  const {data,error}=await sb.storage.from("ad-images").list(folder,{
+    limit:100,
+    sortBy:{column:"name",order:"asc"}
+  });
+  if(error || !data?.length) return [];
+  return data
+    .filter(file=>file.name && !file.name.startsWith("."))
+    .map(file=>sb.storage.from("ad-images").getPublicUrl(`${folder}/${file.name}`).data.publicUrl);
 }
 async function openDetail(id){
   const ad=allAds.find(x=>Number(x.id)===Number(id));
@@ -459,10 +469,8 @@ async function uploadAdImages(adId, files){
     const path=`${adId}/${Date.now()}_${i}.${ext}`;
     const up=await sb.storage.from("ad-images").upload(path,f,{upsert:false});
     if(up.error) throw up.error;
-    const pub=sb.storage.from("ad-images").getPublicUrl(path);
-    const imageUrl=pub.data.publicUrl;
-    const ins=await sb.from("ad_images").insert([{ad_id:adId,image_url:imageUrl}]);
-    if(ins.error) throw ins.error;
+    // Images are discovered directly from the ad's Storage folder.
+    // No ad_images table insert is required.
   }
 }
 
