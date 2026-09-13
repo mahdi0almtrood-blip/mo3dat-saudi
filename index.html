@@ -354,7 +354,7 @@ function renderAds(list){
   box.innerHTML=list.map(ad=>{
     const cover=getCover(ad);
     return `<article class="ad-card" onclick="openDetail(${Number(ad.id)})">
-      <div class="ad-cover">${cover?`<img src="${esc(cover)}" alt="">`:`<div class="placeholder">🚜</div>`}</div>
+      <div class="ad-cover" id="ad-cover-${Number(ad.id)}">${cover?`<img src="${esc(cover)}" alt="">`:`<div class="placeholder">🚜</div>`}</div>
       <div class="ad-body">
         <div class="ad-title">${esc(ad.title||"إعلان معدات")}</div>
         <div class="price">${ad.price?Number(ad.price).toLocaleString("ar-SA")+" ريال":"السعر عند التواصل"}</div>
@@ -362,6 +362,17 @@ function renderAds(list){
       </div>
     </article>`;
   }).join("");
+  hydrateCovers(list);
+}
+
+async function hydrateCovers(list){
+  await Promise.all(list.map(async ad=>{
+    if(getCover(ad))return;
+    const imgs=await getImages(ad);
+    if(!imgs.length)return;
+    const box=document.getElementById(`ad-cover-${Number(ad.id)}`);
+    if(box)box.innerHTML=`<img src="${esc(imgs[0])}" alt="">`;
+  }));
 }
 
 async function getImages(ad){
