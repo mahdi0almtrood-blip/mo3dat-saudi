@@ -126,6 +126,15 @@ button{cursor:pointer}
 
 .message-box{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
 .message-box textarea{width:100%;min-height:90px;padding:12px;border:1px solid #cfd8d3;border-radius:10px}
+.comments-box{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}
+.comment-form{display:grid;grid-template-columns:1fr 2fr auto;gap:8px;align-items:start}
+.comment-form input,.comment-form textarea{width:100%;padding:11px;border:1px solid #cfd8d3;border-radius:10px}
+.comment-form textarea{min-height:46px;resize:vertical}
+.comments-list{display:grid;gap:10px;margin-top:14px}
+.comment{background:#f7faf8;border:1px solid var(--line);border-radius:12px;padding:12px}
+.comment-head{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px;margin-bottom:6px}
+.comment-text{white-space:pre-wrap;line-height:1.7}
+@media(max-width:600px){.comment-form{grid-template-columns:1fr}.comment-form button{width:100%}}
 
 .panel{
   background:white;border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:22px
@@ -405,12 +414,23 @@ async function openDetail(id){
         </div>
         <div class="message-box">
           <h3>رسالة خاصة للمعلن</h3>
-          <textarea id="privateMessage" placeholder="اكتب رسالتك هنا..."></textarea>
-          <button class="primary" style="width:100%;margin-top:8px" onclick="sendPrivateMessage(${Number(ad.id)})">إرسال الرسالة</button>
+          <textarea id="privateMessage" placeholder="اكتب رسالتك الخاصة هنا..."></textarea>
+          <button class="primary" style="width:100%;margin-top:8px" onclick="sendPrivateMessage(${Number(ad.id)})">إرسال الرسالة الخاصة</button>
           <div id="messageStatus" class="status"></div>
+        </div>
+        <div class="comments-box">
+          <h3>التعليقات العامة</h3>
+          <div class="comment-form">
+            <input id="commentName" maxlength="50" placeholder="اسمك">
+            <textarea id="commentBody" maxlength="1000" placeholder="اكتب تعليقًا يظهر للجميع..."></textarea>
+            <button class="primary" onclick="addComment(${Number(ad.id)})">إضافة تعليق</button>
+          </div>
+          <div id="commentStatus" class="status"></div>
+          <div id="commentsList" class="comments-list"><div class="empty">جاري تحميل التعليقات...</div></div>
         </div>
       </div>
     </div>`;
+  await loadComments(ad.id);
 }
 function showImage(url,btn){
   document.getElementById("galleryMain").innerHTML=`<img src="${url}" alt="">`;
@@ -437,6 +457,31 @@ async function shareAd(id){
   if(navigator.share){try{await navigator.share({title:text,text,url});return}catch(e){}}
   await navigator.clipboard.writeText(url);
   alert("تم نسخ رابط الإعلان");
+}
+
+async function loadComments(adId){
+  const box=document.getElementById("commentsList");
+  if(!box)return;
+  const {data,error}=await sb.from("comments").select("id,author_name,comment,created_at").eq("ad_id",adId).order("created_at",{ascending:true}).limit(100);
+  if(error){box.innerHTML='<div class="error">تعذر تحميل التعليقات حاليًا.</div>';return;}
+  if(!data?.length){box.innerHTML='<div class="empty">لا توجد تعليقات بعد. كن أول من يعلق.</div>';return;}
+  box.innerHTML=data.map(item=>`<div class="comment">
+    <div class="comment-head"><strong>${esc(item.author_name||"زائر")}</strong><span>${new Date(item.created_at).toLocaleString("ar-SA")}</span></div>
+    <div class="comment-text">${esc(item.comment||"")}</div>
+  </div>`).join("");
+}
+async function addComment(adId){
+  const name=document.getElementById("commentName");
+  const body=document.getElementById("commentBody");
+  const status=document.getElementById("commentStatus");
+  const comment=body.value.trim();
+  if(!comment){status.style.color="#b42318";status.textContent="اكتب التعليق أولاً";return;}
+  status.style.color="#17221d";status.textContent="جاري إضافة التعليق...";
+  const {error}=await sb.from("comments").insert([{ad_id:adId,author_name:name.value.trim()||"زائر",comment}]);
+  if(error){status.style.color="#b42318";status.textContent="لم تتم إضافة التعليق. يلزم تشغيل إعداد Supabase.";return;}
+  body.value="";
+  status.style.color="#087052";status.textContent="✅ تم نشر التعليق";
+  await loadComments(adId);
 }
 
 async function sendPrivateMessage(adId){
