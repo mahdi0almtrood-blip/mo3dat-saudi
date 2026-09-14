@@ -59,6 +59,19 @@ button{
   margin-top:10px;
 }
 
+.edit{background:#087052;color:white;margin-top:10px}
+.images{display:flex;gap:8px;overflow:auto;margin:12px 0}
+.images img{width:105px;height:78px;object-fit:cover;border-radius:8px;border:1px solid #ddd}
+.modal{display:none;position:fixed;inset:0;background:#0009;z-index:50;padding:15px;overflow:auto}
+.modal.open{display:block}
+.modal-box{max-width:650px;margin:20px auto;background:white;border-radius:14px;padding:20px}
+.modal input,.modal textarea{width:100%;box-sizing:border-box;padding:11px;margin:6px 0 12px;border:1px solid #ccd6d0;border-radius:8px}
+.modal textarea{min-height:110px}
+.save{background:#087052;color:white;margin-top:10px}
+.cancel{background:#eee;color:#222;margin-top:8px}
+.old-image{position:relative;flex:none}
+.old-image button{position:absolute;top:3px;left:3px;width:28px;height:28px;padding:0;background:#c62828;color:white;border-radius:50%}
+
 .status{
   text-align:center;
   padding:15px;
@@ -85,6 +98,24 @@ button{
 <div class="status">جاري تحميل الإعلانات...</div>
 </div>
 
+<div id="editModal" class="modal">
+ <div class="modal-box">
+  <h2>تعديل الإعلان والصور</h2>
+  <input id="editTitle" placeholder="عنوان الإعلان">
+  <input id="editPrice" type="number" placeholder="السعر">
+  <input id="editCity" placeholder="المدينة">
+  <input id="editPhone" placeholder="الهاتف">
+  <input id="editWhatsapp" placeholder="واتساب">
+  <textarea id="editMessage" placeholder="الوصف"></textarea>
+  <label><strong>الصور الحالية — اضغط × لحذف صورة</strong></label>
+  <div id="oldImages" class="images"></div>
+  <label><strong>إضافة صور جديدة</strong></label>
+  <input id="editImages" type="file" accept="image/*" multiple>
+  <button class="save" onclick="saveAd()">حفظ التعديلات</button>
+  <button class="cancel" onclick="closeEdit()">إلغاء</button>
+ </div>
+</div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -97,6 +128,17 @@ const SUPABASE_KEY = "sb_publishable_KdNneYT0PkMo-0IrLGYOCA_e4-lrnyC";
 
 const supabaseClient =
 supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let currentAd=null;
+let currentImageFiles=[];
+
+function safe(v){return String(v??"").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#039;"}[c]));}
+
+async function listImages(id){
+ const {data,error}=await supabaseClient.storage.from("ad-images").list(String(id),{limit:100,sortBy:{column:"name",order:"asc"}});
+ if(error)return [];
+ return (data||[]).filter(x=>x.name&&!x.name.startsWith(".")).map(x=>({name:x.name,url:supabaseClient.storage.from("ad-images").getPublicUrl(`${id}/${x.name}`).data.publicUrl}));
+}
 
 async function loadAds(){
 
@@ -125,25 +167,30 @@ return;
 
 adsBox.innerHTML="";
 
-data.forEach(ad=>{
+for(const ad of data){
 
 const div=document.createElement("div");
 div.className="ad";
 
+const imgs=await listImages(ad.id);
 div.innerHTML=`
-<h3>${ad.title || "بدون عنوان"}</h3>
+<h3>${safe(ad.title || "بدون عنوان")}</h3>
+
+<div class="images">${imgs.map(x=>`<img src="${safe(x.url)}" alt="">`).join("")||"لا توجد صور"}</div>
 
 <p><strong>رقم الإعلان:</strong> ${ad.id || ""}</p>
 
-<p><strong>السعر:</strong> ${ad.price || "غير محدد"}</p>
+<p><strong>السعر:</strong> ${safe(ad.price || "غير محدد")}</p>
 
-<p><strong>المدينة:</strong> ${ad.city || "غير محددة"}</p>
+<p><strong>المدينة:</strong> ${safe(ad.city || "غير محددة")}</p>
 
-<p><strong>الهاتف:</strong> ${ad.phone || ""}</p>
+<p><strong>الهاتف:</strong> ${safe(ad.phone || "")}</p>
 
-<p><strong>واتساب:</strong> ${ad.whatsapp || ""}</p>
+<p><strong>واتساب:</strong> ${safe(ad.whatsapp || "")}</p>
 
-<p><strong>الوصف:</strong><br>${ad.message || ""}</p>
+<p><strong>الوصف:</strong><br>${safe(ad.message || "")}</p>
+
+<button class="edit" onclick="openEdit(${ad.id})">تعديل الإعلان والصور</button>
 
 <button class="delete"
 onclick="deleteAd(${ad.id})">
@@ -153,9 +200,48 @@ onclick="deleteAd(${ad.id})">
 
 adsBox.appendChild(div);
 
-});
+}
 
 }
+
+async function openEdit(id){
+ const {data,error}=await supabaseClient.from("ads").select("*").eq("id",id).single();
+ if(error){alert("تعذر فتح الإعلان");return;}
+ currentAd=data;
+ editTitle.value=data.title||""; editPrice.value=data.price||""; editCity.value=data.city||"";
+ editPhone.value=data.phone||""; editWhatsapp.value=data.whatsapp||""; editMessage.value=data.message||"";
+ editImages.value="";
+ await refreshOldImages();
+ editModal.classList.add("open");
+}
+
+async function refreshOldImages(){
+ currentImageFiles=await listImages(currentAd.id);
+ oldImages.innerHTML=currentImageFiles.map(x=>`<div class="old-image"><img src="${safe(x.url)}"><button onclick="removeImage('${safe(x.name)}')">×</button></div>`).join("")||"لا توجد صور";
+}
+
+async function removeImage(name){
+ if(!confirm("حذف هذه الصورة؟"))return;
+ const {error}=await supabaseClient.storage.from("ad-images").remove([`${currentAd.id}/${name}`]);
+ if(error){alert("تعذر حذف الصورة");return;}
+ await refreshOldImages();
+}
+
+async function saveAd(){
+ const changes={title:editTitle.value.trim(),price:editPrice.value||null,city:editCity.value.trim(),phone:editPhone.value.trim(),whatsapp:editWhatsapp.value.trim()||null,message:editMessage.value.trim()};
+ const {error}=await supabaseClient.from("ads").update(changes).eq("id",currentAd.id);
+ if(error){alert("تعذر حفظ البيانات: "+error.message);return;}
+ const files=[...editImages.files];
+ for(let i=0;i<files.length;i++){
+  const f=files[i],ext=(f.name.split(".").pop()||"jpg").toLowerCase();
+  const path=`${currentAd.id}/${Date.now()}_${i}.${ext}`;
+  const up=await supabaseClient.storage.from("ad-images").upload(path,f,{upsert:false});
+  if(up.error){alert("تم حفظ البيانات لكن تعذر رفع إحدى الصور");return;}
+ }
+ alert("تم حفظ التعديلات والصور"); closeEdit(); loadAds();
+}
+
+function closeEdit(){editModal.classList.remove("open");currentAd=null;}
 
 async function deleteAd(id){
 
