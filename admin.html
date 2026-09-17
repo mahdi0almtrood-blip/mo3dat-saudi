@@ -76,6 +76,13 @@ button{
   text-align:center;
   padding:15px;
 }
+
+.auth-gate{position:fixed;inset:0;z-index:999;background:#f5f7f5;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{width:min(420px,100%);background:white;border:1px solid #dfe6e2;border-radius:16px;padding:24px;box-shadow:0 16px 45px #0002}
+.auth-card h2{color:#087052;margin-top:0;text-align:center}
+.auth-card input{width:100%;box-sizing:border-box;padding:13px;margin:7px 0;border:1px solid #ccd6d0;border-radius:9px;font-size:16px}
+.auth-error{color:#b71c1c;min-height:24px;text-align:center;margin:8px 0}
+.logout{width:auto;background:#fff;color:#087052;padding:9px 16px;margin-top:8px}
 </style>
 </head>
 
@@ -84,6 +91,7 @@ button{
 <header>
 <h1>لوحة إدارة معدات السعودية</h1>
 <p>إدارة الإعلانات</p>
+<button id="logoutBtn" class="logout" hidden onclick="logoutAdmin()">تسجيل الخروج</button>
 </header>
 
 <div class="container">
@@ -261,10 +269,41 @@ return;
 
 alert("تم حذف الإعلان");
 loadAds();
-
 }
 
-loadAds();
+function showLogin(){
+ let gate=document.getElementById("authGate");
+ if(!gate){
+  gate=document.createElement("div"); gate.id="authGate"; gate.className="auth-gate";
+  gate.innerHTML=`<form class="auth-card" onsubmit="loginAdmin(event)">
+   <h2>دخول مدير الموقع</h2>
+   <input id="adminEmail" type="email" autocomplete="username" placeholder="البريد الإلكتروني" required>
+   <input id="adminPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور" required>
+   <div id="authError" class="auth-error"></div>
+   <button class="refresh" type="submit">تسجيل الدخول</button>
+  </form>`;
+  document.body.appendChild(gate);
+ }
+ gate.style.display="flex";
+ logoutBtn.hidden=true;
+}
+
+async function loginAdmin(e){
+ e.preventDefault(); authError.textContent="جاري تسجيل الدخول...";
+ const {error}=await supabaseClient.auth.signInWithPassword({email:adminEmail.value.trim(),password:adminPassword.value});
+ if(error){authError.textContent="البريد أو كلمة المرور غير صحيحة";return;}
+ document.getElementById("authGate")?.remove(); logoutBtn.hidden=false; loadAds();
+}
+
+async function logoutAdmin(){await supabaseClient.auth.signOut();location.reload();}
+
+async function startAdmin(){
+ const {data}=await supabaseClient.auth.getSession();
+ if(!data.session){showLogin();return;}
+ logoutBtn.hidden=false; loadAds();
+}
+
+startAdmin();
 
 </script>
 
