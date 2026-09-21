@@ -83,6 +83,12 @@ button{
 .auth-card input{width:100%;box-sizing:border-box;padding:13px;margin:7px 0;border:1px solid #ccd6d0;border-radius:9px;font-size:16px}
 .auth-error{color:#b71c1c;min-height:24px;text-align:center;margin:8px 0}
 .logout{width:auto;background:#fff;color:#087052;padding:9px 16px;margin-top:8px}
+.dashboard-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dashboard-actions a{display:block;text-align:center;background:#eef7f3;color:#087052;border:1px solid #b8ded0;border-radius:9px;padding:12px;font-weight:bold}
+.section-heading{color:#087052;margin:28px 0 12px}
+.item{background:white;border:1px solid #dfe6e2;border-radius:12px;padding:14px;margin-bottom:10px}
+.item small{color:#66736d}
+@media(max-width:650px){.dashboard-actions{grid-template-columns:1fr}}
 </style>
 </head>
 
@@ -90,21 +96,24 @@ button{
 
 <header>
 <h1>لوحة إدارة معدات السعودية</h1>
-<p>إدارة الإعلانات</p>
+<p>إدارة الإعلانات والرسائل والتعليقات</p>
 <button id="logoutBtn" class="logout" hidden onclick="logoutAdmin()">تسجيل الخروج</button>
 </header>
 
 <div class="container">
 
-<div class="box">
-<button class="refresh" onclick="loadAds()">
-تحديث الإعلانات
-</button>
+<div class="box dashboard-actions">
+<button class="refresh" onclick="loadDashboard()">تحديث الكل</button>
+<a href="#messagesSection">الرسائل الخاصة</a>
+<a href="../index.html" target="_blank" rel="noopener">فتح الموقع</a>
 </div>
 
-<div id="ads">
-<div class="status">جاري تحميل الإعلانات...</div>
-</div>
+<h2 class="section-heading">الإعلانات</h2>
+<div id="ads"><div class="status">جاري تحميل الإعلانات...</div></div>
+<h2 id="messagesSection" class="section-heading">الرسائل الخاصة</h2>
+<div id="messages"><div class="status">جاري تحميل الرسائل...</div></div>
+<h2 class="section-heading">التعليقات</h2>
+<div id="commentsAdmin"><div class="status">جاري تحميل التعليقات...</div></div>
 
 <div id="editModal" class="modal">
  <div class="modal-box">
@@ -158,7 +167,7 @@ adsBox.innerHTML=
 const {data,error}=await supabaseClient
 .from("ads")
 .select("*")
-.order("id",{ascending:false});
+.order("created_at",{ascending:false}).order("id",{ascending:false});
 
 if(error){
 adsBox.innerHTML=
@@ -252,23 +261,59 @@ async function saveAd(){
 function closeEdit(){editModal.classList.remove("open");currentAd=null;}
 
 async function deleteAd(id){
-
-if(!confirm("هل أنت متأكد من حذف هذا الإعلان؟"))
-return;
-
-const {error}=await supabaseClient
-.from("ads")
-.delete()
-.eq("id",id);
-
-if(error){
-alert("تعذر حذف الإعلان");
-console.error(error);
-return;
+ if(!confirm("هل أنت متأكد من حذف هذا الإعلان وصوره ورسائله؟")) return;
+ const files=await listImages(id);
+ if(files.length){
+  const removal=await supabaseClient.storage.from("ad-images").remove(files.map(x=>`${id}/${x.name}`));
+  if(removal.error){alert("تعذر حذف صور الإعلان: "+removal.error.message);return;}
+ }
+ const {error}=await supabaseClient.from("ads").delete().eq("id",id);
+ if(error){alert("تعذر حذف الإعلان: "+error.message);return;}
+ alert("تم حذف الإعلان نهائيًا");
+ await loadDashboard();
 }
 
-alert("تم حذف الإعلان");
-loadAds();
+
+async function loadMessages(){
+ const box=document.getElementById("messages");
+ const {data,error}=await supabaseClient.from("messages")
+  .select("id,ad_id,message,created_at,ads(title)")
+  .order("created_at",{ascending:false}).limit(200);
+ if(error){box.innerHTML=`<div class="status">تعذر تحميل الرسائل: ${safe(error.message)}</div>`;return;}
+ box.innerHTML=(data||[]).map(x=>`<div class="item">
+  <strong>${safe(x.ads?.title||"إعلان رقم "+x.ad_id)}</strong>
+  <p>${safe(x.message||"")}</p>
+  <small>${x.created_at?new Date(x.created_at).toLocaleString("ar-SA"):""}</small>
+  <button class="delete" onclick="deleteMessage(${Number(x.id)})">حذف الرسالة</button>
+ </div>`).join("")||'<div class="status">لا توجد رسائل حاليًا</div>';
+}
+async function deleteMessage(id){
+ if(!confirm("حذف هذه الرسالة؟"))return;
+ const {error}=await supabaseClient.from("messages").delete().eq("id",id);
+ if(error){alert("تعذر حذف الرسالة: "+error.message);return;}
+ await loadMessages();
+}
+async function loadAdminComments(){
+ const box=document.getElementById("commentsAdmin");
+ const {data,error}=await supabaseClient.from("comments")
+  .select("id,ad_id,author_name,comment,created_at,ads(title)")
+  .order("created_at",{ascending:false}).limit(200);
+ if(error){box.innerHTML=`<div class="status">تعذر تحميل التعليقات: ${safe(error.message)}</div>`;return;}
+ box.innerHTML=(data||[]).map(x=>`<div class="item">
+  <strong>${safe(x.author_name||"زائر")} — ${safe(x.ads?.title||"إعلان رقم "+x.ad_id)}</strong>
+  <p>${safe(x.comment||"")}</p>
+  <small>${x.created_at?new Date(x.created_at).toLocaleString("ar-SA"):""}</small>
+  <button class="delete" onclick="deleteComment(${Number(x.id)})">حذف التعليق</button>
+ </div>`).join("")||'<div class="status">لا توجد تعليقات حاليًا</div>';
+}
+async function deleteComment(id){
+ if(!confirm("حذف هذا التعليق؟"))return;
+ const {error}=await supabaseClient.from("comments").delete().eq("id",id);
+ if(error){alert("تعذر حذف التعليق: "+error.message);return;}
+ await loadAdminComments();
+}
+async function loadDashboard(){
+ await Promise.all([loadAds(),loadMessages(),loadAdminComments()]);
 }
 
 function showLogin(){
@@ -292,7 +337,7 @@ async function loginAdmin(e){
  e.preventDefault(); authError.textContent="جاري تسجيل الدخول...";
  const {error}=await supabaseClient.auth.signInWithPassword({email:adminEmail.value.trim(),password:adminPassword.value});
  if(error){authError.textContent="البريد أو كلمة المرور غير صحيحة";return;}
- document.getElementById("authGate")?.remove(); logoutBtn.hidden=false; loadAds();
+ document.getElementById("authGate")?.remove(); logoutBtn.hidden=false; loadDashboard();
 }
 
 async function logoutAdmin(){await supabaseClient.auth.signOut();location.reload();}
@@ -300,7 +345,7 @@ async function logoutAdmin(){await supabaseClient.auth.signOut();location.reload
 async function startAdmin(){
  const {data}=await supabaseClient.auth.getSession();
  if(!data.session){showLogin();return;}
- logoutBtn.hidden=false; loadAds();
+ logoutBtn.hidden=false; loadDashboard();
 }
 
 startAdmin();
