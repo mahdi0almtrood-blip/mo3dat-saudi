@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<!-- deploy-version: 2026-09-18-force-netlify-deploy -->
+<!-- deploy-version: 2026-09-21-complete-admin-security -->
 <style>
 :root{
   --green:#087052;
@@ -179,6 +179,7 @@ footer{background:#10271f;color:white;text-align:center;padding:32px 18px;margin
     <div class="nav-actions">
       <button class="nav-btn hide-mobile" onclick="document.getElementById('postAd').scrollIntoView({behavior:'smooth'})">أضف إعلان</button>
       <button class="nav-btn" onclick="showFavorites()">المفضلة</button>
+      <a class="nav-btn hide-mobile" href="admin.html">الإدارة</a>
     </div>
   </div>
 </div>
@@ -317,7 +318,7 @@ function selectCategory(c){ activeCategory=c; renderCategories(); applyFilters()
 async function loadAds(){
   const box=document.getElementById("adsList");
   box.innerHTML='<div class="empty">جاري تحميل الإعلانات...</div>';
-  const {data,error}=await sb.from("ads").select("*").order("created_at",{ascending:false}).limit(200);
+  const {data,error}=await sb.from("ads").select("*").order("created_at",{ascending:false}).order("id",{ascending:false}).limit(200);
   if(error){
     box.innerHTML=`<div class="error">❌ تعذر تحميل الإعلانات.<br>${esc(error.message)}</div>`;
     return;
@@ -468,9 +469,11 @@ function showFavorites(){
 async function shareAd(id){
   const ad=allAds.find(x=>Number(x.id)===Number(id));
   const text=`${ad?.title||"إعلان معدات"} - معدات السعودية`;
-  const url=location.href.split("#")[0]+"#ad-"+id;
-  if(navigator.share){try{await navigator.share({title:text,text,url});return}catch(e){}}
-  await navigator.clipboard.writeText(url);
+  const url=new URL(location.href);
+  url.hash="";
+  url.searchParams.set("ad",String(id));
+  if(navigator.share){try{await navigator.share({title:text,text,url:url.toString()});return}catch(e){}}
+  await navigator.clipboard.writeText(url.toString());
   alert("تم نسخ رابط الإعلان");
 }
 
@@ -548,6 +551,8 @@ document.getElementById("adForm").addEventListener("submit",async function(e){
     city:document.getElementById("city").value.trim(),
     phone:document.getElementById("phone").value.trim(),
     whatsapp:document.getElementById("whatsapp").value.trim()||null,
+    category,
+    description,
     message:`القسم: ${category}\n\n${description}`
   };
   const {data,error}=await sb.from("ads").insert([ad]).select().single();
@@ -568,13 +573,13 @@ document.getElementById("adForm").addEventListener("submit",async function(e){
   await loadAds();
 });
 
-renderCategories();
-loadAds();
-
-window.addEventListener("load",()=>{
-  const m=location.hash.match(/^#ad-(\d+)$/);
-  if(m)setTimeout(()=>openDetail(Number(m[1])),700);
-});
+async function initApp(){
+  renderCategories();
+  await loadAds();
+  const id=new URL(location.href).searchParams.get("ad");
+  if(id && /^\d+$/.test(id)) await openDetail(Number(id));
+}
+initApp();
 </script>
 </body>
 </html>
