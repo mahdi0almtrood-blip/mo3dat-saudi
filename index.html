@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<!-- deploy-version: 2026-09-21-complete-admin-security -->
+<!-- deploy-version: 2026-09-22-stable-images-messages -->
 <style>
 :root{
   --green:#087052;
@@ -381,6 +381,7 @@ async function hydrateCovers(list){
 }
 
 async function getImages(ad){
+  if(Array.isArray(ad.image_urls)&&ad.image_urls.length) return ad.image_urls;
   if(Array.isArray(ad.images)&&ad.images.length) return ad.images;
   if(ad.image_url) return [ad.image_url];
 
@@ -525,16 +526,20 @@ imageInput.addEventListener("change",()=>{
 });
 
 async function uploadAdImages(adId, files){
-  if(!files.length) return;
+  if(!files.length) return [];
+  const urls=[];
   for(let i=0;i<files.length;i++){
     const f=files[i];
     const ext=(f.name.split(".").pop()||"jpg").toLowerCase();
     const path=`${adId}/${Date.now()}_${i}.${ext}`;
     const up=await sb.storage.from("ad-images").upload(path,f,{upsert:false});
     if(up.error) throw up.error;
-    // Images are discovered directly from the ad's Storage folder.
-    // No ad_images table insert is required.
+    const publicUrl=sb.storage.from("ad-images").getPublicUrl(path).data.publicUrl;
+    urls.push(publicUrl);
+    await sb.from("ad_images").insert([{ad_id:adId,image_url:publicUrl}]);
   }
+  if(urls.length) await sb.from("ads").update({image_url:urls[0],images:urls,image_urls:urls}).eq("id",adId);
+  return urls;
 }
 
 document.getElementById("adForm").addEventListener("submit",async function(e){
