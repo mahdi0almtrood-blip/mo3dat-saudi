@@ -226,7 +226,7 @@ async function openEdit(id){
  if(error){alert("تعذر فتح الإعلان");return;}
  currentAd=data;
  editTitle.value=data.title||""; editPrice.value=data.price||""; editCity.value=data.city||"";
- editPhone.value=data.phone||""; editWhatsapp.value=data.whatsapp||""; editMessage.value=data.message||"";
+ editPhone.value=data.phone||""; editWhatsapp.value=data.whatsapp||""; editMessage.value=data.description||data.message||"";
  editImages.value="";
  await refreshOldImages();
  editModal.classList.add("open");
@@ -245,16 +245,21 @@ async function removeImage(name){
 }
 
 async function saveAd(){
- const changes={title:editTitle.value.trim(),price:editPrice.value||null,city:editCity.value.trim(),phone:editPhone.value.trim(),whatsapp:editWhatsapp.value.trim()||null,message:editMessage.value.trim()};
+ const description=editMessage.value.trim(); const changes={title:editTitle.value.trim(),price:editPrice.value||null,city:editCity.value.trim(),phone:editPhone.value.trim(),whatsapp:editWhatsapp.value.trim()||null,description,message:description};
  const {error}=await supabaseClient.from("ads").update(changes).eq("id",currentAd.id);
  if(error){alert("تعذر حفظ البيانات: "+error.message);return;}
  const files=[...editImages.files];
+ const newUrls=[];
  for(let i=0;i<files.length;i++){
   const f=files[i],ext=(f.name.split(".").pop()||"jpg").toLowerCase();
   const path=`${currentAd.id}/${Date.now()}_${i}.${ext}`;
   const up=await supabaseClient.storage.from("ad-images").upload(path,f,{upsert:false});
   if(up.error){alert("تم حفظ البيانات لكن تعذر رفع إحدى الصور");return;}
+  const publicUrl=supabaseClient.storage.from("ad-images").getPublicUrl(path).data.publicUrl;
+  newUrls.push(publicUrl);
+  await supabaseClient.from("ad_images").insert([{ad_id:currentAd.id,image_url:publicUrl}]);
  }
+ if(newUrls.length){ const existing=(await listImages(currentAd.id)).map(x=>x.url); await supabaseClient.from("ads").update({image_url:existing[0]||null,images:existing,image_urls:existing}).eq("id",currentAd.id); }
  alert("تم حفظ التعديلات والصور"); closeEdit(); loadAds();
 }
 
