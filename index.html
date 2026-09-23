@@ -179,6 +179,7 @@ footer{background:#10271f;color:white;text-align:center;padding:32px 18px;margin
     <div class="nav-actions">
       <button class="nav-btn hide-mobile" onclick="document.getElementById('postAd').scrollIntoView({behavior:'smooth'})">أضف إعلان</button>
       <button class="nav-btn" onclick="showFavorites()">المفضلة</button>
+      <button class="nav-btn" id="accountBtn" onclick="openAccount()">دخول / حسابي</button>
       <a class="nav-btn hide-mobile" href="admin.html">الإدارة</a>
     </div>
   </div>
@@ -264,6 +265,13 @@ footer{background:#10271f;color:white;text-align:center;padding:32px 18px;margin
   </section>
 </main>
 
+<div id="accountModal" class="modal" onclick="if(event.target.id==='accountModal')closeAccount()">
+  <div class="modal-box" style="max-width:520px">
+    <button class="close" onclick="closeAccount()">×</button>
+    <div id="accountContent"></div>
+  </div>
+</div>
+
 <div id="detailModal" class="modal" onclick="closeOnBackdrop(event)">
   <div class="modal-box">
     <button class="close" onclick="closeDetail()">×</button>
@@ -286,6 +294,74 @@ const CATEGORIES = ["الكل","جرارات زراعية","حفارات","شي�
 let allAds = [];
 let activeCategory = "الكل";
 let favorites = JSON.parse(localStorage.getItem("mo3dat_favorites") || "[]");
+let currentUser = null;
+
+async function refreshUser(){
+  const {data}=await sb.auth.getUser();
+  currentUser=data.user||null;
+  const b=document.getElementById("accountBtn");
+  if(b)b.textContent=currentUser?"حسابي":"دخول / تسجيل";
+}
+function closeAccount(){document.getElementById("accountModal").classList.remove("open")}
+async function openAccount(){
+  const m=document.getElementById("accountModal"), box=document.getElementById("accountContent");
+  m.classList.add("open");
+  await refreshUser();
+  if(!currentUser){
+    box.innerHTML=`<h2>حساب العميل</h2>
+      <p>سجّل الدخول حتى تستطيع نشر إعلانك وتعديله أو حذفه بنفسك.</p>
+      <input id="custEmail" type="email" placeholder="البريد الإلكتروني" style="width:100%;padding:12px;margin:6px 0">
+      <input id="custPass" type="password" minlength="8" placeholder="كلمة المرور" style="width:100%;padding:12px;margin:6px 0">
+      <button class="primary" style="width:100%;margin-top:8px" onclick="customerLogin()">تسجيل الدخول</button>
+      <button class="nav-btn" style="width:100%;margin-top:8px;color:#087052;border-color:#087052" onclick="customerSignup()">إنشاء حساب جديد</button>
+      <div id="accountStatus" class="status"></div>`;
+    return;
+  }
+  const {data,error}=await sb.from("ads").select("id,title,price,city,created_at").eq("owner_id",currentUser.id).order("created_at",{ascending:false});
+  box.innerHTML=`<h2>حسابي</h2><p>${esc(currentUser.email||"")}</p>
+    <button class="nav-btn" style="color:#087052;border-color:#087052" onclick="customerLogout()">تسجيل الخروج</button>
+    <h3>إعلاناتي</h3>
+    ${error?'<div class="error">تعذر تحميل إعلاناتك</div>':(data||[]).map(a=>`<div class="comment" style="margin:8px 0"><strong>${esc(a.title)}</strong><div>رقم الإعلان: ${a.id}</div><button class="primary" onclick="editOwnAd(${a.id})">تعديل</button> <button style="background:#c62828;color:white;border:0;border-radius:8px;padding:10px" onclick="deleteOwnAd(${a.id})">حذف</button></div>`).join("")||'<div class="empty">لا توجد إعلانات مرتبطة بحسابك بعد.</div>'}`;
+}
+async function customerLogin(){
+ const email=document.getElementById("custEmail").value.trim(),password=document.getElementById("custPass").value;
+ const {error}=await sb.auth.signInWithPassword({email,password});
+ if(error){accountStatus.textContent="تعذر الدخول: "+error.message;return}
+ await refreshUser(); await openAccount();
+}
+async function customerSignup(){
+ const email=document.getElementById("custEmail").value.trim(),password=document.getElementById("custPass").value;
+ if(!email||password.length<8){accountStatus.textContent="اكتب بريدًا صحيحًا وكلمة مرور 8 أحرف على الأقل";return}
+ const {data,error}=await sb.auth.signUp({email,password});
+ if(error){accountStatus.textContent="تعذر إنشاء الحساب: "+error.message;return}
+ if(!data.session){accountStatus.textContent="تم إنشاء الحساب. افتح رسالة التأكيد في بريدك ثم سجّل الدخول.";return}
+ await refreshUser(); await openAccount();
+}
+async function customerLogout(){await sb.auth.signOut();currentUser=null;closeAccount();await refreshUser()}
+async function deleteOwnAd(id){
+ if(!currentUser){openAccount();return}
+ if(!confirm("هل تريد حذف إعلانك نهائيًا؟"))return;
+ const ad=allAds.find(a=>Number(a.id)===Number(id));
+ if(ad){
+   const {data:files}=await sb.storage.from("ad-images").list(String(id),{limit:100});
+   if(files?.length) await sb.storage.from("ad-images").remove(files.filter(x=>x.name&&!x.name.startsWith(".")).map(x=>`${id}/${x.name}`));
+ }
+ const {error}=await sb.from("ads").delete().eq("id",id).eq("owner_id",currentUser.id);
+ if(error){alert("تعذر حذف الإعلان: "+error.message);return}
+ alert("تم حذف إعلانك");
+ closeDetail(); await loadAds(); await openAccount();
+}
+async function editOwnAd(id){
+ if(!currentUser){openAccount();return}
+ const ad=allAds.find(a=>Number(a.id)===Number(id)); if(!ad)return;
+ const title=prompt("عنوان الإعلان",ad.title||""); if(title===null)return;
+ const price=prompt("السعر",ad.price||""); if(price===null)return;
+ const city=prompt("المدينة",ad.city||""); if(city===null)return;
+ const desc=prompt("الوصف",ad._description||ad.description||ad.message||""); if(desc===null)return;
+ const {error}=await sb.from("ads").update({title:title.trim(),price:price||null,city:city.trim(),description:desc,message:desc}).eq("id",id).eq("owner_id",currentUser.id);
+ if(error){alert("تعذر تعديل الإعلان: "+error.message);return}
+ alert("تم تعديل إعلانك"); await loadAds(); await openAccount();
+}
 
 function esc(v){
   return String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;")
@@ -435,6 +511,7 @@ async function openDetail(id){
           <button class="primary" style="width:100%;margin-top:8px" onclick="sendPrivateMessage(${Number(ad.id)})">إرسال الرسالة الخاصة</button>
           <div id="messageStatus" class="status"></div>
         </div>
+        ${currentUser && ad.owner_id===currentUser.id?`<div class="actions"><button class="action-link share" onclick="editOwnAd(${Number(ad.id)})">✏️ تعديل إعلاني</button><button class="action-link" style="background:#c62828;color:white" onclick="deleteOwnAd(${Number(ad.id)})">🗑️ حذف إعلاني</button></div>`:""}
         <div class="comments-box">
           <h3>التعليقات العامة</h3>
           <div class="comment-form">
@@ -544,6 +621,8 @@ async function uploadAdImages(adId, files){
 
 document.getElementById("adForm").addEventListener("submit",async function(e){
   e.preventDefault();
+  await refreshUser();
+  if(!currentUser){alert("سجّل الدخول أو أنشئ حسابًا أولًا حتى يكون الإعلان ملكك وتستطيع تعديله أو حذفه.");openAccount();return;}
   const btn=document.getElementById("submitBtn");
   const status=document.getElementById("formStatus");
   btn.disabled=true;btn.textContent="جاري النشر...";
@@ -558,7 +637,8 @@ document.getElementById("adForm").addEventListener("submit",async function(e){
     whatsapp:document.getElementById("whatsapp").value.trim()||null,
     category,
     description,
-    message:`القسم: ${category}\n\n${description}`
+    message:`القسم: ${category}\n\n${description}`,
+    owner_id:currentUser.id
   };
   const {data,error}=await sb.from("ads").insert([ad]).select().single();
   if(error){
@@ -579,6 +659,8 @@ document.getElementById("adForm").addEventListener("submit",async function(e){
 });
 
 async function initApp(){
+  await refreshUser();
+  sb.auth.onAuthStateChange(()=>setTimeout(refreshUser,0));
   renderCategories();
   await loadAds();
   const id=new URL(location.href).searchParams.get("ad");
