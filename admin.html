@@ -189,7 +189,18 @@ for(const ad of data){
 const div=document.createElement("div");
 div.className="ad";
 
-const imgs=await listImages(ad.id);
+// Render the ad immediately. Images load independently so a storage request
+// can never leave the whole admin dashboard stuck on "loading".
+let imgs=[];
+try{
+ imgs=await Promise.race([
+  listImages(ad.id),
+  new Promise(resolve=>setTimeout(()=>resolve([]),3000))
+ ]);
+}catch(e){
+ console.warn("Image loading failed for ad",ad.id,e);
+ imgs=[];
+}
 div.innerHTML=`
 <h3>${safe(ad.title || "بدون عنوان")}</h3>
 
