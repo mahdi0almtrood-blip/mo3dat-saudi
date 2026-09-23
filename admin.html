@@ -332,6 +332,34 @@ async function loadDashboard(){
  await Promise.all([loadAds(),loadMessages(),loadAdminComments()]);
 }
 
+function showPasswordReset(){
+ let gate=document.getElementById("authGate");
+ if(gate) gate.remove();
+ gate=document.createElement("div"); gate.id="authGate"; gate.className="auth-gate";
+ gate.innerHTML=`<form class="auth-card" onsubmit="saveNewPassword(event)">
+  <h2>تعيين كلمة مرور جديدة</h2>
+  <p style="text-align:center">اكتب كلمة المرور الجديدة لحساب المدير</p>
+  <input id="newAdminPassword" type="password" autocomplete="new-password" placeholder="كلمة المرور الجديدة" minlength="8" required>
+  <input id="confirmAdminPassword" type="password" autocomplete="new-password" placeholder="تأكيد كلمة المرور الجديدة" minlength="8" required>
+  <div id="authError" class="auth-error"></div>
+  <button class="refresh" type="submit">حفظ كلمة المرور الجديدة</button>
+ </form>`;
+ document.body.appendChild(gate);
+ logoutBtn.hidden=true;
+}
+
+async function saveNewPassword(e){
+ e.preventDefault();
+ const p=newAdminPassword.value;
+ if(p!==confirmAdminPassword.value){authError.textContent="كلمتا المرور غير متطابقتين";return;}
+ authError.textContent="جاري حفظ كلمة المرور...";
+ const {error}=await supabaseClient.auth.updateUser({password:p});
+ if(error){authError.textContent="تعذر تغيير كلمة المرور: "+error.message;return;}
+ authError.style.color="#087052";
+ authError.textContent="تم تغيير كلمة المرور بنجاح. سيتم فتح لوحة الإدارة الآن.";
+ setTimeout(()=>{document.getElementById("authGate")?.remove();logoutBtn.hidden=false;loadDashboard();},1200);
+}
+
 function showLogin(){
  let gate=document.getElementById("authGate");
  if(!gate){
@@ -358,7 +386,22 @@ async function loginAdmin(e){
 
 async function logoutAdmin(){await supabaseClient.auth.signOut();location.reload();}
 
+let recoveryMode=false;
+supabaseClient.auth.onAuthStateChange((event)=>{
+ if(event==="PASSWORD_RECOVERY"){
+  recoveryMode=true;
+  setTimeout(showPasswordReset,0);
+ }
+});
+
 async function startAdmin(){
+ // Recovery links normally contain auth tokens in the URL hash. Give the
+ // Supabase client a moment to emit PASSWORD_RECOVERY before showing admin UI.
+ if(location.hash.includes("type=recovery")){
+  recoveryMode=true;
+  setTimeout(showPasswordReset,0);
+  return;
+ }
  const {data}=await supabaseClient.auth.getSession();
  if(!data.session){showLogin();return;}
  logoutBtn.hidden=false; loadDashboard();
