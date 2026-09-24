@@ -605,17 +605,30 @@ imageInput.addEventListener("change",()=>{
 async function uploadAdImages(adId, files){
   if(!files.length) return [];
   const urls=[];
+  const allowedTypes=["image/jpeg","image/png","image/webp","image/gif"];
+  const maxBytes=12*1024*1024;
   for(let i=0;i<files.length;i++){
     const f=files[i];
     const ext=(f.name.split(".").pop()||"jpg").toLowerCase();
-    const path=`${adId}/${Date.now()}_${i}.${ext}`;
-    const up=await sb.storage.from("ad-images").upload(path,f,{upsert:false});
+    if(!allowedTypes.includes(f.type) || !["jpg","jpeg","png","webp","gif"].includes(ext)){
+      throw new Error(`الصورة "${f.name}" غير مدعومة. اختر JPG أو JPEG أو PNG أو WEBP.`);
+    }
+    if(f.size>maxBytes){
+      throw new Error(`الصورة "${f.name}" أكبر من 12MB. اختر صورة أصغر.`);
+    }
+    const safeExt=ext==="jpeg"?"jpg":ext;
+    const path=`${adId}/${Date.now()}_${i}.${safeExt}`;
+    const up=await sb.storage.from("ad-images").upload(path,f,{upsert:false,contentType:f.type});
     if(up.error) throw up.error;
     const publicUrl=sb.storage.from("ad-images").getPublicUrl(path).data.publicUrl;
     urls.push(publicUrl);
-    await sb.from("ad_images").insert([{ad_id:adId,image_url:publicUrl}]);
+    const imageRow=await sb.from("ad_images").insert([{ad_id:adId,image_url:publicUrl}]);
+    if(imageRow.error) throw imageRow.error;
   }
-  if(urls.length) await sb.from("ads").update({image_url:urls[0],images:urls,image_urls:urls}).eq("id",adId);
+  if(urls.length){
+    const saved=await sb.from("ads").update({image_url:urls[0],images:urls,image_urls:urls}).eq("id",adId);
+    if(saved.error) throw saved.error;
+  }
   return urls;
 }
 
@@ -650,7 +663,7 @@ document.getElementById("adForm").addEventListener("submit",async function(e){
     status.style.color="#087052";status.textContent="✅ تم نشر الإعلان بنجاح";
   }catch(err){
     status.style.color="#b26a00";
-    status.textContent="✅ تم نشر الإعلان، لكن الصور تحتاج تفعيل إعداد الصور في Supabase.";
+    status.textContent="✅ تم نشر الإعلان، لكن الصورة لم تُرفع: "+(err?.message||"خطأ غير معروف");
   }
   this.reset();
   document.getElementById("previewGrid").innerHTML="";
