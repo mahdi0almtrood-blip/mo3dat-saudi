@@ -1,3 +1,9 @@
 [build]
   publish = "."
   command = ""
+
+# Keep shared/direct links inside the single-page marketplace working.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
