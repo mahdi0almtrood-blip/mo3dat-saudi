@@ -48,7 +48,9 @@ button{cursor:pointer}
   display:flex;align-items:center;gap:14px;justify-content:space-between
 }
 .brand{font-size:24px;font-weight:800;white-space:nowrap}
-.nav-actions{display:flex;gap:8px;align-items:center}
+.nav-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media(max-width:600px){.topbar-inner{flex-wrap:wrap}.nav-actions{width:100%}.nav-btn{font-size:13px;padding:8px}}
+#feedback{scroll-margin-top:130px}
 .nav-btn{
   border:1px solid #ffffff55;background:#ffffff15;color:white;
   border-radius:10px;padding:9px 12px;font-weight:700
@@ -190,6 +192,7 @@ footer{background:#10271f;color:white;text-align:center;padding:32px 18px;margin
     <div class="brand">معدات السعودية 🇸🇦</div>
     <div class="nav-actions">
       <button class="nav-btn hide-mobile" onclick="document.getElementById('postAd').scrollIntoView({behavior:'smooth'})">أضف إعلان</button>
+      <a class="nav-btn" href="#feedback">الاقتراحات والشكاوى</a>
       <button class="nav-btn" onclick="showFavorites()">المفضلة</button>
       <button class="nav-btn" id="accountBtn" onclick="openAccount()">دخول / حسابي</button>
       <a class="nav-btn hide-mobile" href="admin.html">الإدارة</a>
@@ -281,7 +284,18 @@ footer{background:#10271f;color:white;text-align:center;padding:32px 18px;margin
   </section>
   <section class="panel" id="feedback">
     <h2>الاقتراحات والشكاوى</h2>
-    <p>إذا عندك مشكلة في الموقع أو اقتراح لتطوير معدات السعودية، تواصل مباشرة مع إدارة الموقع.</p>
+    <p>أرسل اقتراحك أو شكواك أو ملاحظتك مباشرة إلى إدارة معدات السعودية. لا تحتاج إلى تسجيل الدخول.</p>
+    <form id="feedbackForm">
+      <div class="form-grid">
+        <div><label for="feedbackKind">نوع الرسالة</label><select id="feedbackKind" required><option value="suggestion">اقتراح</option><option value="complaint">شكوى</option><option value="note">ملاحظة</option></select></div>
+        <div><label for="feedbackName">الاسم (اختياري)</label><input id="feedbackName" maxlength="80" autocomplete="name"></div>
+        <div class="full"><label for="feedbackContact">الجوال أو البريد للتواصل (اختياري)</label><input id="feedbackContact" maxlength="120" placeholder="اكتبه إذا رغبت أن تتواصل الإدارة معك"></div>
+        <div class="full"><label for="feedbackMessage">نص الرسالة</label><textarea id="feedbackMessage" required minlength="5" maxlength="2000" rows="5" placeholder="اكتب تفاصيل الاقتراح أو المشكلة..."></textarea></div>
+      </div>
+      <div hidden aria-hidden="true"><input id="feedbackWebsite" tabindex="-1" autocomplete="off"></div>
+      <button id="feedbackSubmit" class="primary" type="submit" style="margin-top:12px">إرسال إلى الإدارة</button>
+      <div id="feedbackStatus" class="status" role="status" aria-live="polite"></div>
+    </form>
     <p><strong>الجوال والواتساب: 0507402086</strong></p>
   </section>
 </main>
@@ -690,6 +704,26 @@ document.getElementById("adForm").addEventListener("submit",async function(e){
   document.getElementById("previewGrid").innerHTML="";
   btn.disabled=false;btn.textContent="نشر الإعلان";
   await loadAds();
+});
+
+document.getElementById("feedbackForm").addEventListener("submit",async function(event){
+  event.preventDefault();
+  const button=document.getElementById("feedbackSubmit"), status=document.getElementById("feedbackStatus");
+  if(button.disabled)return;
+  const message=document.getElementById("feedbackMessage").value.trim();
+  if(message.length<5){status.textContent="اكتب رسالة من 5 أحرف على الأقل";return;}
+  if(document.getElementById("feedbackWebsite").value)return;
+  button.disabled=true; status.style.color="#087052"; status.textContent="جاري إرسال الرسالة...";
+  try{
+    const {error}=await sb.from("feedback").insert({
+      kind:document.getElementById("feedbackKind").value,
+      name:document.getElementById("feedbackName").value.trim(),
+      contact:document.getElementById("feedbackContact").value.trim(),message
+    }).abortSignal(AbortSignal.timeout(15000));
+    if(error)throw error;
+    this.reset();status.textContent="تم إرسال رسالتك بنجاح إلى إدارة معدات السعودية. شكرًا لك.";
+  }catch(error){status.style.color="#b42318";status.textContent="تعذر تأكيد إرسال الرسالة. احتفظ بنصها وحاول لاحقًا أو تواصل على 0507402086.";console.error(error);}
+  finally{button.disabled=false;}
 });
 
 async function initApp(){

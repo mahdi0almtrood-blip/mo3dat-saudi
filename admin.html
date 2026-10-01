@@ -96,7 +96,7 @@ button{
 
 <header>
 <h1>لوحة إدارة معدات السعودية</h1>
-<p>إدارة الإعلانات والرسائل والتعليقات</p>
+<p>إدارة الإعلانات والرسائل والتعليقات والاقتراحات والشكاوى</p>
 <button id="logoutBtn" class="logout" hidden onclick="logoutAdmin()">تسجيل الخروج</button>
 </header>
 
@@ -105,6 +105,7 @@ button{
 <div class="box dashboard-actions">
 <button class="refresh" onclick="loadDashboard()">تحديث الكل</button>
 <a href="#messagesSection">الرسائل الخاصة</a>
+<a href="#feedbackSection">الاقتراحات والشكاوى <span id="feedbackCount"></span></a>
 <a href="../index.html" target="_blank" rel="noopener">فتح الموقع</a>
 </div>
 
@@ -112,6 +113,9 @@ button{
 <div id="ads"><div class="status">جاري تحميل الإعلانات...</div></div>
 <h2 id="messagesSection" class="section-heading">الرسائل الخاصة</h2>
 <div id="messages"><div class="status">جاري تحميل الرسائل...</div></div>
+<h2 id="feedbackSection" class="section-heading">الاقتراحات والشكاوى</h2>
+<p>تظهر رسائل الزوار تلقائيًا كل 15 ثانية، أو اضغط «تحديث الكل».</p>
+<div id="feedbackAdmin" aria-live="polite"></div>
 <h2 class="section-heading">التعليقات</h2>
 <div id="commentsAdmin"><div class="status">جاري تحميل التعليقات...</div></div>
 
@@ -167,7 +171,7 @@ adsBox.innerHTML=
 const {data,error}=await supabaseClient
 .from("ads")
 .select("*")
-.order("created_at",{ascending:false}).order("id",{ascending:false});
+.order("created_at",{ascending:false}).order("id",{ascending:false}).abortSignal(AbortSignal.timeout(12000));
 
 if(error){
 adsBox.innerHTML=
@@ -192,14 +196,8 @@ div.className="ad";
 // Render the ad immediately. Images load independently so a storage request
 // can never leave the whole admin dashboard stuck on "loading".
 let imgs=[];
-try{
- imgs=await Promise.race([
-  listImages(ad.id),
-  new Promise(resolve=>setTimeout(()=>resolve([]),3000))
- ]);
-}catch(e){
- console.warn("Image loading failed for ad",ad.id,e);
- imgs=[];
+for(const source of [ad.image_url,...(Array.isArray(ad.images)?ad.images:[]),...(Array.isArray(ad.image_urls)?ad.image_urls:[])]){
+ if(typeof source==="string" && source && !imgs.some(x=>x.url===source))imgs.push({url:source});
 }
 div.innerHTML=`
 <h3>${safe(ad.title || "بدون عنوان")}</h3>
@@ -216,7 +214,7 @@ div.innerHTML=`
 
 <p><strong>واتساب:</strong> ${safe(ad.whatsapp || "")}</p>
 
-<p><strong>الوصف:</strong><br>${safe(ad.message || "")}</p>
+<p><strong>الوصف:</strong><br>${safe(ad.description || ad.message || "")}</p>
 
 <button class="edit" onclick="openEdit(${ad.id})">تعديل الإعلان والصور</button>
 
@@ -227,6 +225,9 @@ onclick="deleteAd(${ad.id})">
 `;
 
 adsBox.appendChild(div);
+listImages(ad.id).then(images=>{
+ if(images.length && div.isConnected)div.querySelector(".images").innerHTML=images.map(x=>`<img src="${safe(x.url)}" alt="">`).join("");
+}).catch(e=>console.warn("تعذر تحميل الصور",e));
 
 }
 
@@ -293,12 +294,13 @@ async function deleteAd(id){
 async function loadMessages(){
  const box=document.getElementById("messages");
  const {data,error}=await supabaseClient.from("messages")
-  .select("id,ad_id,message,created_at,ads(title)")
-  .order("created_at",{ascending:false}).limit(200);
+  .select("id,ad_id,message,sender_phone,phone,sender,created_at,ads(title)")
+  .order("created_at",{ascending:false}).limit(200).abortSignal(AbortSignal.timeout(12000));
  if(error){box.innerHTML=`<div class="status">تعذر تحميل الرسائل: ${safe(error.message)}</div>`;return;}
  box.innerHTML=(data||[]).map(x=>`<div class="item">
   <strong>${safe(x.ads?.title||"إعلان رقم "+x.ad_id)}</strong>
-  <p>${safe(x.message||"")}</p>
+  <p style="white-space:pre-wrap">${safe(x.message||"")}</p>
+  <p>المرسل: ${safe(x.sender||"زائر")} — التواصل: ${safe(x.sender_phone||x.phone||"لم يُذكر")}</p>
   <small>${x.created_at?new Date(x.created_at).toLocaleString("ar-SA"):""}</small>
   <button class="delete" onclick="deleteMessage(${Number(x.id)})">حذف الرسالة</button>
  </div>`).join("")||'<div class="status">لا توجد رسائل حاليًا</div>';
@@ -313,7 +315,7 @@ async function loadAdminComments(){
  const box=document.getElementById("commentsAdmin");
  const {data,error}=await supabaseClient.from("comments")
   .select("id,ad_id,author_name,comment,created_at,ads(title)")
-  .order("created_at",{ascending:false}).limit(200);
+  .order("created_at",{ascending:false}).limit(200).abortSignal(AbortSignal.timeout(12000));
  if(error){box.innerHTML=`<div class="status">تعذر تحميل التعليقات: ${safe(error.message)}</div>`;return;}
  box.innerHTML=(data||[]).map(x=>`<div class="item">
   <strong>${safe(x.author_name||"زائر")} — ${safe(x.ads?.title||"إعلان رقم "+x.ad_id)}</strong>
@@ -328,7 +330,44 @@ async function deleteComment(id){
  if(error){alert("تعذر حذف التعليق: "+error.message);return;}
  await loadAdminComments();
 }
+const feedbackKinds={suggestion:"اقتراح",complaint:"شكوى",note:"ملاحظة"};
+const feedbackStates={new:"جديدة",reviewing:"قيد المراجعة",resolved:"تمت المعالجة"};
+let feedbackLoading=false, feedbackTimer=null;
+async function loadFeedback(){
+ if(feedbackLoading)return;
+ feedbackLoading=true;
+ const box=document.getElementById("feedbackAdmin");
+ try{
+  const {data,error}=await supabaseClient.from("feedback").select("*").order("created_at",{ascending:false}).limit(200).abortSignal(AbortSignal.timeout(12000));
+  if(error)throw error;
+  document.getElementById("feedbackCount").textContent=`(${(data||[]).filter(x=>x.status==='new').length} جديدة)`;
+  box.innerHTML=(data||[]).map(x=>`<div class="item">
+   <strong>${safe(feedbackKinds[x.kind]||x.kind)} — ${safe(x.name||"زائر")}</strong>
+   <p style="white-space:pre-wrap;overflow-wrap:anywhere">${safe(x.message)}</p>
+   <p>التواصل: ${safe(x.contact||"لم يُذكر")}</p>
+   <small>رقم الرسالة: ${Number(x.id)} — ${new Date(x.created_at).toLocaleString("ar-SA")}</small>
+   <p>الحالة: <strong>${safe(feedbackStates[x.status])}</strong></p>
+   <label for="feedbackState${Number(x.id)}">تغيير الحالة</label>
+   <select id="feedbackState${Number(x.id)}" onchange="updateFeedbackStatus(${Number(x.id)},this)" style="padding:10px;width:100%">
+    ${Object.entries(feedbackStates).map(([key,label])=>`<option value="${key}" ${key===x.status?'selected':''}>${label}</option>`).join('')}
+   </select>
+  </div>`).join('')||'<div class="status">لا توجد اقتراحات أو شكاوى حاليًا</div>';
+ }catch(error){box.innerHTML=`<div class="status">تعذر تحميل الاقتراحات والشكاوى: ${safe(error.message||"تحقق من اتصالك")}</div>`;}
+ finally{feedbackLoading=false;}
+}
+async function updateFeedbackStatus(id,select){
+ select.disabled=true;
+ try{
+  const {data,error}=await supabaseClient.from("feedback").update({status:select.value}).eq("id",id).select("id").abortSignal(AbortSignal.timeout(12000));
+  if(error)throw error;
+  if(!data?.length)throw new Error("لم يتم حفظ الحالة. تحقق من صلاحية المدير.");
+ }catch(error){alert("تعذر حفظ الحالة: "+error.message);}
+ finally{select.disabled=false;await loadFeedback();}
+}
+
 async function loadDashboard(){
+ loadFeedback();
+ if(!feedbackTimer)feedbackTimer=setInterval(()=>{if(!document.hidden && !document.activeElement?.id?.startsWith("feedbackState"))loadFeedback();},15000);
  // Load each section independently so one failed request cannot block the ads list.
  loadAds().catch(e=>{
   console.error(e);
@@ -369,7 +408,7 @@ async function saveNewPassword(e){
  if(error){authError.textContent="تعذر تغيير كلمة المرور: "+error.message;return;}
  authError.style.color="#087052";
  authError.textContent="تم تغيير كلمة المرور بنجاح. سيتم فتح لوحة الإدارة الآن.";
- setTimeout(()=>{document.getElementById("authGate")?.remove();logoutBtn.hidden=false;loadDashboard();},1200);
+ setTimeout(()=>{authorizeAdmin();},1200);
 }
 
 function showLogin(){
@@ -393,7 +432,7 @@ async function loginAdmin(e){
  e.preventDefault(); authError.textContent="جاري تسجيل الدخول...";
  const {error}=await supabaseClient.auth.signInWithPassword({email:adminEmail.value.trim(),password:adminPassword.value});
  if(error){authError.textContent="البريد أو كلمة المرور غير صحيحة";return;}
- document.getElementById("authGate")?.remove(); logoutBtn.hidden=false; loadDashboard();
+ await authorizeAdmin();
 }
 
 async function logoutAdmin(){await supabaseClient.auth.signOut();location.reload();}
@@ -406,6 +445,17 @@ supabaseClient.auth.onAuthStateChange((event)=>{
  }
 });
 
+async function authorizeAdmin(){
+ let data,error;
+ try{({data,error}=await supabaseClient.rpc("is_site_admin").abortSignal(AbortSignal.timeout(12000)));}catch(e){error=e;}
+ if(error||data!==true){
+  showLogin();
+  document.getElementById("authError").textContent=error?"تعذر التحقق من صلاحية المدير. حاول تسجيل الدخول مجددًا.":"هذا الحساب ليس حساب مدير الموقع. سجّل الدخول بحساب المدير.";
+  return;
+ }
+ document.getElementById("authGate")?.remove();logoutBtn.hidden=false;loadDashboard();
+}
+
 async function startAdmin(){
  // Recovery links normally contain auth tokens in the URL hash. Give the
  // Supabase client a moment to emit PASSWORD_RECOVERY before showing admin UI.
@@ -416,7 +466,7 @@ async function startAdmin(){
  }
  const {data}=await supabaseClient.auth.getSession();
  if(!data.session){showLogin();return;}
- logoutBtn.hidden=false; loadDashboard();
+ await authorizeAdmin();
 }
 
 startAdmin();
