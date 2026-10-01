@@ -329,7 +329,19 @@ async function deleteComment(id){
  await loadAdminComments();
 }
 async function loadDashboard(){
- await Promise.all([loadAds(),loadMessages(),loadAdminComments()]);
+ // Load each section independently so one failed request cannot block the ads list.
+ loadAds().catch(e=>{
+  console.error(e);
+  document.getElementById("ads").innerHTML='<div class="status">تعذر تحميل الإعلانات. حاول التحديث.</div>';
+ });
+ loadMessages().catch(e=>{
+  console.error(e);
+  document.getElementById("messages").innerHTML='<div class="status">تعذر تحميل الرسائل حاليًا</div>';
+ });
+ loadAdminComments().catch(e=>{
+  console.error(e);
+  document.getElementById("commentsAdmin").innerHTML='<div class="status">تعذر تحميل التعليقات حاليًا</div>';
+ });
 }
 
 function showPasswordReset(){
